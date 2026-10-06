@@ -883,7 +883,6 @@ input[type="radio"] {
   gap: 0.6rem;
   min-height: 3.4rem;
   padding: 0.45rem 0.85rem;
-  padding-right: 7.2rem;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
@@ -897,13 +896,13 @@ input[type="radio"] {
 }
 
 .exam-islands {
-  position: fixed;
-  top: 0.4rem;
-  right: 0.55rem;
-  z-index: 40;
+  position: relative;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 0.35rem;
+  margin: 0 0 0.85rem;
+  z-index: 2;
 }
 
 .island {
@@ -946,16 +945,19 @@ input[type="radio"] {
 
 .drag-bubble {
   position: fixed;
-  left: 50%;
-  top: 18%;
-  transform: translateX(-50%);
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -130%);
   z-index: 90;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
   background: var(--fg);
   color: var(--bg);
   font-size: 0.85rem;
+  line-height: 1.2;
+  white-space: nowrap;
   pointer-events: none;
+  box-shadow: 0 10px 24px color-mix(in oklab, black 35%, transparent);
 }
 
 .settings-nav {
@@ -986,11 +988,11 @@ input[type="radio"] {
 .exam-count { white-space: nowrap; font-variant-numeric: tabular-nums; }
 @media (max-width: 819px) {
   .hide-phone { display: none !important; }
-  .exam-top { gap: 0.25rem; padding-right: 5.6rem; }
+  .exam-top { gap: 0.25rem; }
   .island { min-width: 4.4rem; font-size: 1.02rem; padding: 0.15rem 0.45rem; }
 }
 .exam-body {
-  padding: 4.6rem 1rem 6.5rem;
+  padding: 1.1rem 1rem 6.5rem;
   max-width: 44rem;
   margin: 0 auto;
 }
@@ -1515,8 +1517,15 @@ input[type="radio"] {
   .exam-body {
     min-height: 0;
     overflow: auto;
-    padding-top: 1.2rem;
+    max-width: none;
+    margin: 0;
+    padding: 0.85rem 1rem 6.2rem;
     overscroll-behavior: contain;
+  }
+  .exam-sheet {
+    max-width: 44rem;
+    margin: 0 auto;
+    width: 100%;
   }
 }
 
@@ -1524,16 +1533,42 @@ input[type="radio"] {
   .main.bare {
     padding: 0;
   }
+  .is-exam,
+  .is-review {
+    padding-top: 3.4rem;
+  }
+  .exam-split {
+    display: flex;
+    flex-direction: column;
+  }
+  .exam-body {
+    display: contents;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  .exam-islands {
+    order: 1;
+    align-self: flex-end;
+    margin: 0.4rem 0.75rem 0.15rem auto;
+  }
+  .warn-line {
+    order: 2;
+  }
   .map-desktop {
     display: block;
+    order: 3;
     max-height: 42vh;
     overflow: auto;
     overscroll-behavior: contain;
     border-bottom: 1px solid var(--line);
     padding: 0.7rem 0.8rem 0.9rem;
-    margin-top: 3.4rem;
+    margin-top: 0;
   }
-  .exam-split.is-closed .exam-body { padding-top: 4.5rem; }
+  .exam-sheet {
+    order: 4;
+    padding: 1rem 1rem 6.5rem;
+  }
   .field,
   textarea.field {
     font-size: 16px;
@@ -2084,6 +2119,58 @@ html[data-theme="light"] .is-exam .opt.is-picked .opt-letter {
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent);
 }
 
+.item-row.is-arming {
+  outline: 1px dashed var(--accent);
+  outline-offset: -3px;
+}
+.item-row.is-merge {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+}
+.exam-eye {
+  margin-left: 0.15rem;
+}
+.pick-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.9rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+}
+.pick-row .grow {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+}
+.pick-row input {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  accent-color: var(--accent);
+}
+.pick-apply {
+  position: sticky;
+  bottom: -0.2rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.55rem;
+  background: var(--surface);
+}
+.btn-line[data-on="true"] {
+  border-color: var(--accent);
+  color: var(--fg);
+}
 .item-row.is-bordered {
   position: relative;
   isolation: isolate;
@@ -18534,6 +18621,30 @@ REGLAS ABSOLUTAS
       let l = { ...t, tagIds: a, updatedAt: W() };
       (await pt(l), $({ ...S.data, tests: S.data.tests.map((u) => (u.id === e ? l : u)) }));
     },
+    async applyTagTests(tagId, subjectId, ids) {
+      let want = new Set(ids || []),
+        now = W(),
+        changed = [],
+        tests = S.data.tests.map((t) => {
+          if (t.trashedAt || t.pool || t.subjectId !== subjectId) return t;
+          let has = (t.tagIds || []).includes(tagId),
+            on = want.has(t.id);
+          if (has === on) return t;
+          let tagIds = on
+            ? [...new Set([...(t.tagIds || []), tagId])]
+            : (t.tagIds || []).filter((id) => id !== tagId),
+            n = { ...t, tagIds, updatedAt: now };
+          return (changed.push(n), n);
+        });
+      changed.length && (await Xu(changed));
+      let editor = S.editor;
+      if (editor) {
+        let n = changed.find((t) => t.id === editor.test.id);
+        n && (editor = { ...editor, test: { ...editor.test, tagIds: n.tagIds } });
+      }
+      (G({ data: { ...S.data, tests }, editor, modal: null }),
+        se(changed.length ? "Etiqueta actualizada" : "Sin cambios"));
+    },
     async saveTag(e) {
       let a = e.name.trim();
       if (a) {
@@ -19790,7 +19901,9 @@ REGLAS ABSOLUTAS
                                   ? (0, g.jsx)(TgForm, { groupId: e.groupId, parentId: e.parentId })
                                   : e.type === "exam-sample"
                                     ? (0, g.jsx)(ExSample, {})
-                                    : e.type === "pair-folder"
+                                    : e.type === "tag-tests"
+                                      ? (0, g.jsx)(TagPick, { tagId: e.tagId })
+                                      : e.type === "pair-folder"
                                       ? (0, g.jsx)(pairFolder, { a: e.a, b: e.b })
                                       : e.type === "pair-group"
                                         ? (0, g.jsx)(pairGroup, { a: e.a, b: e.b })
@@ -21157,7 +21270,7 @@ REGLAS ABSOLUTAS
     return t;
   }
   var dragLive = null;
-  function dragBubble(text) {
+  function dragBubble(text, x, y) {
     let e = document.querySelector(".drag-bubble");
     if (!text) {
       e?.remove();
@@ -21168,6 +21281,10 @@ REGLAS ABSOLUTAS
       (e.className = "drag-bubble"),
       document.body.appendChild(e));
     e.textContent = text;
+    if (x == null) return;
+    let left = Math.max(72, Math.min(window.innerWidth - 72, x)),
+      top = Math.max(56, Math.min(window.innerHeight - 28, y - 8));
+    ((e.style.left = left + "px"), (e.style.top = top + "px"));
   }
   function Qs({ items: e, viewClass: a, kind: t, within: scope }) {
     let [l, u] = (0, Be.useState)(null),
@@ -21299,6 +21416,9 @@ REGLAS ABSOLUTAS
                     target: null,
                     bubble: !1,
                     moved: !1,
+                    mergeId: null,
+                    x: b,
+                    y: A,
                   };
                   try {
                     p.setPointerCapture?.(L);
@@ -21313,7 +21433,7 @@ REGLAS ABSOLUTAS
                 D = (B) => {
                 if (B.pointerId !== L) return;
                 if (!O) {
-                  Math.hypot(B.clientX - b, B.clientY - A) > 14 && (window.clearTimeout(H), z());
+                  Math.hypot(B.clientX - b, B.clientY - A) > 28 && (window.clearTimeout(H), z());
                   return;
                 }
                 (B.preventDefault(), holdScroll());
@@ -21322,37 +21442,95 @@ REGLAS ABSOLUTAS
                   ((ee.style.left = B.clientX - n.offset.dx + "px"),
                     (ee.style.top = B.clientY - n.offset.dy + "px"));
                 }
-                let hit = document.elementFromPoint(B.clientX, B.clientY),
-                  slot = hit?.closest?.("[data-drop]"),
-                  key = slot ? `${slot.dataset.drop}:${slot.dataset.id || ""}` : "",
-                  live = dragLive;
+                let stack = document.elementsFromPoint(B.clientX, B.clientY),
+                  slot = null;
+                for (let el of stack) {
+                  if (el.closest?.(".sort-floater, .drag-bubble")) continue;
+                  let d = el.closest?.("[data-drop]");
+                  if (d) {
+                    slot = d;
+                    break;
+                  }
+                }
+                let live = dragLive;
+                if (live?.mergeId && !slot) {
+                  let prev = document.querySelector(`[data-drop="${t}"][data-id="${live.mergeId}"]`);
+                  if (prev) {
+                    let box = prev.getBoundingClientRect();
+                    if (
+                      B.clientX >= box.left - 12 &&
+                      B.clientX <= box.right + 12 &&
+                      B.clientY >= box.top - 12 &&
+                      B.clientY <= box.bottom + 12
+                    )
+                      slot = prev;
+                  }
+                }
+                let key = slot ? `${slot.dataset.drop}:${slot.dataset.id || ""}` : "",
+                  nest =
+                    !!(
+                      slot &&
+                      (t === "test" || t === "tag") &&
+                      slot.dataset.drop === t &&
+                      slot.dataset.id &&
+                      slot.dataset.id !== w
+                    ),
+                  inCenter = !1;
+                if (nest && t === "test") {
+                  let A0 = S.data.tests.find((o) => o.id === w),
+                    B0 = S.data.tests.find((o) => o.id === slot.dataset.id);
+                  if (!A0 || !B0 || A0.subjectId !== B0.subjectId) nest = !1;
+                }
+                if (nest) {
+                  let box = slot.getBoundingClientRect(),
+                    rx = (B.clientX - box.left) / Math.max(1, box.width),
+                    ry = (B.clientY - box.top) / Math.max(1, box.height);
+                  inCenter = rx > 0.08 && rx < 0.78 && ry > 0.04 && ry < 0.96;
+                }
+                let bubbleText = t === "test" ? "Crear carpeta" : t === "tag" ? "Crear grupo" : "";
                 if (live) {
+                  ((live.x = B.clientX), (live.y = B.clientY));
                   if (live.target !== key) {
                     (window.clearTimeout(live.hold),
                       (live.hold = null),
                       (live.bubble = !1),
+                      (live.mergeId = null),
                       dragBubble(null),
-                      document.querySelectorAll(".is-drop").forEach((el) => el.classList.remove("is-drop")),
+                      document.querySelectorAll(".is-drop, .is-merge, .is-arming").forEach((el) => {
+                        el.classList.remove("is-drop", "is-merge", "is-arming");
+                      }),
                       (live.target = key),
                       slot && slot.classList.add("is-drop"));
-                    let nest = slot && slot.dataset.drop === t && slot.dataset.id !== w;
-                    if (nest) {
-                      let box = slot.getBoundingClientRect(),
-                        cx = Math.abs(B.clientX - (box.left + box.width / 2)) < box.width * 0.28,
-                        cy = Math.abs(B.clientY - (box.top + box.height / 2)) < box.height * 0.42;
-                      if (cx && cy)
-                        live.hold = window.setTimeout(() => {
-                          live.bubble = !0;
-                          dragBubble(t === "test" ? "Crear carpeta" : t === "tag" ? "Crear grupo" : null);
-                          try {
-                            navigator.vibrate?.(8);
-                          } catch {}
-                        }, 500);
-                    } else if (slot && slot.dataset.drop === "crumb")
+                    if (slot && slot.dataset.drop === "crumb")
                       live.hold = window.setTimeout(() => {
-                        live.moved = !0;
-                        openCrumb(slot.dataset.kind, slot.dataset.id || "");
+                        ((live.moved = !0), openCrumb(slot.dataset.kind, slot.dataset.id || ""));
                       }, 500);
+                  }
+                  if (nest && inCenter && bubbleText) {
+                    live.mergeId = slot.dataset.id;
+                    if (live.bubble) dragBubble(bubbleText, live.x, live.y);
+                    else if (!live.hold) {
+                      slot.classList.add("is-arming");
+                      live.hold = window.setTimeout(() => {
+                        if (dragLive !== live || live.mergeId !== slot.dataset.id) return;
+                        ((live.hold = null), (live.bubble = !0));
+                        slot.classList.remove("is-arming");
+                        slot.classList.add("is-merge");
+                        dragBubble(bubbleText, live.x, live.y);
+                        try {
+                          navigator.vibrate?.(10);
+                        } catch {}
+                      }, 500);
+                    }
+                  } else if (live.bubble && nest) dragBubble(bubbleText, live.x, live.y);
+                  else if (live.bubble && !nest) {
+                    ((live.bubble = !1), (live.mergeId = null), dragBubble(null));
+                    document.querySelectorAll(".is-merge, .is-arming").forEach((el) => {
+                      el.classList.remove("is-merge", "is-arming");
+                    });
+                  } else if (live.hold && !nest && slot?.dataset.drop !== "crumb") {
+                    (window.clearTimeout(live.hold), (live.hold = null), (live.mergeId = null));
+                    document.querySelectorAll(".is-arming").forEach((el) => el.classList.remove("is-arming"));
                   }
                 }
                 if (slot) {
@@ -21370,27 +21548,45 @@ REGLAS ABSOLUTAS
                   (window.removeEventListener("pointermove", D),
                     window.removeEventListener("pointerup", q),
                     window.removeEventListener("pointercancel", q),
+                    window.removeEventListener("blur", onBlur),
                     window.removeEventListener("touchmove", onTouch, { capture: !0 }),
                     window.removeEventListener("wheel", onTouch, { capture: !0 }));
                 },
+                onBlur = () => q({ pointerId: L }),
                 q = (B) => {
                   if (B.pointerId !== L) return;
                   (z(), window.clearTimeout(H));
                   if (!O) return;
                   s.current = !0;
                   let live = dragLive,
-                    hit = document.elementFromPoint(B.clientX, B.clientY)?.closest?.("[data-drop]"),
-                    bubble = !!live?.bubble,
+                    stack = document.elementsFromPoint(B.clientX, B.clientY),
+                    hit = null;
+                  for (let el of stack) {
+                    if (el.closest?.(".sort-floater, .drag-bubble")) continue;
+                    let d = el.closest?.("[data-drop]");
+                    if (d) {
+                      hit = d;
+                      break;
+                    }
+                  }
+                  let bubble = !!live?.bubble,
+                    mergeId = live?.mergeId || null,
                     navigated = !!live?.moved;
                   (window.clearTimeout(live?.hold),
                     dragBubble(null),
-                    document.querySelectorAll(".is-drop").forEach((el) => el.classList.remove("is-drop")),
+                    document.querySelectorAll(".is-drop, .is-merge, .is-arming").forEach((el) => {
+                      el.classList.remove("is-drop", "is-merge", "is-arming");
+                    }),
                     (dragLive = null),
                     n.current?.remove(),
                     (n.current = null),
                     document.body.classList.remove("is-reordering"),
                     u(null));
-                  if (hit && dropOn(t, w, hit, bubble)) return;
+                  if (bubble && mergeId) {
+                    let el = document.querySelector(`[data-drop="${t}"][data-id="${mergeId}"]`);
+                    if (el && dropOn(t, w, el, !0)) return;
+                  }
+                  if (hit && dropOn(t, w, hit, !1)) return;
                   if (navigated) return;
                   let ee = m.current,
                     te2 = h.slice(),
@@ -21404,6 +21600,7 @@ REGLAS ABSOLUTAS
               (window.addEventListener("pointermove", D, { passive: !1 }),
                 window.addEventListener("pointerup", q),
                 window.addEventListener("pointercancel", q),
+                window.addEventListener("blur", onBlur),
                 window.addEventListener("touchmove", onTouch, { passive: !1, capture: !0 }),
                 window.addEventListener("wheel", onTouch, { passive: !1, capture: !0 }));
             },
@@ -22266,7 +22463,7 @@ function Mv({ attemptId: e }) {
             }),
             (0, i.jsx)("button", {
               type: "button",
-              className: "btn-icon",
+              className: "btn-icon exam-eye",
               "aria-label": t.pauseAt ? "Mostrar respuestas" : "Ocultar respuestas",
               "aria-pressed": !!t.pauseAt,
               onClick: () => x.setPause(t.id, !t.pauseAt),
@@ -22274,31 +22471,6 @@ function Mv({ attemptId: e }) {
             }),
           ],
         }),
-        (0, i.jsxs)("div", {
-          className: "exam-islands",
-          children: [
-            (0, i.jsx)("button", {
-              type: "button",
-              className: "island island-time",
-              "data-warn": w,
-              "data-paused": t.pauseAt ? "true" : "false",
-              "aria-label": "Tiempo restante",
-              onClick: () => setPop("time"),
-              children: UL(v),
-            }),
-            (0, i.jsx)("button", {
-              type: "button",
-              className: "island island-grade",
-              "data-ok": live.apto ? "true" : "false",
-              "aria-label": live.apto ? "Nota actual, apto" : "Nota actual, no apto",
-              onClick: () => setPop("grade"),
-              children: gradeText,
-            }),
-          ],
-        }),
-        w
-          ? (0, i.jsx)("p", { className: "warn-line", children: "Queda menos de un minuto." })
-          : null,
         (0, i.jsxs)("div", {
           className: "exam-split" + (mapOn ? "" : " is-closed"),
           children: [
@@ -22314,23 +22486,51 @@ function Mv({ attemptId: e }) {
               : null,
             (0, i.jsxs)("div", {
               className: "exam-body",
-              onTouchStart: (p) => {
-                let L = p.changedTouches[0];
-                L && (f.current = { x: L.clientX, y: L.clientY });
-              },
-              onTouchEnd: (p) => {
-                let L = f.current,
-                  b = p.changedTouches[0];
-                if (((f.current = null), !L || !b)) return;
-                let A = b.clientX - L.x,
-                  O = b.clientY - L.y;
-                Math.abs(A) < 48 ||
-                  Math.abs(A) < Math.abs(O) * 1.4 ||
-                  (A < 0
-                    ? u((M) => Math.min(t.questionOrder.length - 1, M + 1))
-                    : u((M) => Math.max(0, M - 1)));
-              },
               children: [
+                (0, i.jsxs)("div", {
+                  className: "exam-islands",
+                  children: [
+                    (0, i.jsx)("button", {
+                      type: "button",
+                      className: "island island-time",
+                      "data-warn": w,
+                      "data-paused": t.pauseAt ? "true" : "false",
+                      "aria-label": "Tiempo restante",
+                      onClick: () => setPop("time"),
+                      children: UL(v),
+                    }),
+                    (0, i.jsx)("button", {
+                      type: "button",
+                      className: "island island-grade",
+                      "data-ok": live.apto ? "true" : "false",
+                      "aria-label": live.apto ? "Nota actual, apto" : "Nota actual, no apto",
+                      onClick: () => setPop("grade"),
+                      children: gradeText,
+                    }),
+                  ],
+                }),
+                w
+                  ? (0, i.jsx)("p", { className: "warn-line", children: "Queda menos de un minuto." })
+                  : null,
+                (0, i.jsxs)("div", {
+                  className: "exam-sheet",
+                  onTouchStart: (p) => {
+                    let L = p.changedTouches[0];
+                    L && (f.current = { x: L.clientX, y: L.clientY });
+                  },
+                  onTouchEnd: (p) => {
+                    let L = f.current,
+                      b = p.changedTouches[0];
+                    if (((f.current = null), !L || !b)) return;
+                    let A = b.clientX - L.x,
+                      O = b.clientY - L.y;
+                    Math.abs(A) < 48 ||
+                      Math.abs(A) < Math.abs(O) * 1.4 ||
+                      (A < 0
+                        ? u((M) => Math.min(t.questionOrder.length - 1, M + 1))
+                        : u((M) => Math.max(0, M - 1)));
+                  },
+                  children: [
                 (0, i.jsx)("h1", { className: "statement", children: h?.statement }),
                 t.pauseAt
                   ? (0, i.jsx)("p", {
@@ -22435,6 +22635,8 @@ function Mv({ attemptId: e }) {
                               : "Al elegir una opci\xF3n se corrige al momento. Para dejarla en blanco, pasa a la siguiente.",
                           })
                         : null,
+                  ],
+                }),
                   ],
                 }),
               ],
@@ -23899,6 +24101,277 @@ function Mv({ attemptId: e }) {
       ],
     });
   }
+  function TagPick({ tagId: e }) {
+    let { data: a } = V(),
+      t = a.tags.find((M) => M.id === e),
+      order = ["teoria", "psicotecnicos", "ingles", "ortografia", "gramatica"],
+      subs = order.map((id) => el.find((s) => s.id === id)).filter(Boolean),
+      [subject, setSubject] = (0, te.useState)(null),
+      [folderId, setFolder] = (0, te.useState)(null),
+      [picked, setPicked] = (0, te.useState)([]),
+      [q, setQ] = (0, te.useState)(""),
+      [markedOnly, setMarked] = (0, te.useState)(!1);
+    if (!t) return null;
+    let base = subject
+        ? a.tests
+            .filter(
+              (M) => !M.trashedAt && !M.pool && M.subjectId === subject && (M.tagIds || []).includes(e),
+            )
+            .map((M) => M.id)
+        : [],
+      baseSet = new Set(base),
+      pickSet = new Set(picked),
+      dirty =
+        !!subject &&
+        (picked.length !== base.length ||
+          picked.some((id) => !baseSet.has(id)) ||
+          base.some((id) => !pickSet.has(id))),
+      sort = a.settings.librarySort,
+      query = q.trim().toLowerCase(),
+      broad = !!(query || markedOnly),
+      here = folderId ? a.folders.find((M) => M.id === folderId) : null,
+      trail = here ? Cn(a.folders, here.id) : [],
+      foldersHere = subject
+        ? _f(
+            a.folders.filter(
+              (M) => M.subjectId === subject && (M.parentId || null) === (folderId || null) && !M.trashedAt,
+            ),
+            sort,
+            (M) => M.name,
+          )
+        : [],
+      testsHere = subject
+        ? _f(
+            a.tests.filter((M) => {
+              if (M.trashedAt || M.pool || M.subjectId !== subject) return !1;
+              if (query) return M.title.toLowerCase().includes(query);
+              if (markedOnly) return pickSet.has(M.id);
+              return (M.folderId || null) === (folderId || null);
+            }),
+            sort,
+            (M) => M.title,
+          )
+        : [];
+    function enter(id) {
+      if (subject && subject !== id && dirty) {
+        x.toast(`Aplica los cambios de ${al(subject)} antes de cambiar de materia.`);
+        return;
+      }
+      let ids = a.tests
+        .filter((M) => !M.trashedAt && !M.pool && M.subjectId === id && (M.tagIds || []).includes(e))
+        .map((M) => M.id);
+      (setSubject(id), setFolder(null), setPicked(ids), setQ(""), setMarked(!1));
+    }
+    function leaveSubject() {
+      if (dirty) {
+        x.toast("Hay cambios sin aplicar. Pulsa Aplicar o cancela.");
+        return;
+      }
+      (setSubject(null), setFolder(null), setPicked([]), setQ(""), setMarked(!1));
+    }
+    function toggle(id) {
+      setPicked(pickSet.has(id) ? picked.filter((n) => n !== id) : [...picked, id]);
+    }
+    function where(M) {
+      let bits = Cn(a.folders, M.folderId).map((f) => f.name);
+      return bits.length ? bits.join(" / ") : "Raíz";
+    }
+    let addN = picked.filter((id) => !baseSet.has(id)).length,
+      remN = base.filter((id) => !pickSet.has(id)).length,
+      changeText = !dirty
+        ? "Sin cambios"
+        : [
+            addN ? `${addN} se ${addN === 1 ? "añade" : "añaden"}` : "",
+            remN ? `${remN} se ${remN === 1 ? "quita" : "quitan"}` : "",
+          ]
+            .filter(Boolean)
+            .join(" · ");
+    return (0, g.jsx)(Ue, {
+      title: subject ? `Tests de ${al(subject)}` : `Añadir a ${t.name}`,
+      onClose: () => x.closeModal(),
+      children: subject
+        ? (0, g.jsxs)("div", {
+            className: "stack",
+            children: [
+              (0, g.jsxs)("nav", {
+                className: "folder-nav",
+                "aria-label": "Ruta",
+                children: [
+                  (0, g.jsx)("button", { type: "button", onClick: leaveSubject, children: "Materias" }),
+                  (0, g.jsx)("span", { "aria-hidden": "true", children: "/" }),
+                  (0, g.jsx)("button", {
+                    type: "button",
+                    "data-on": !folderId,
+                    onClick: () => {
+                      (setFolder(null), setQ(""), setMarked(!1));
+                    },
+                    children: al(subject),
+                  }),
+                  trail.map((M, idx) =>
+                    (0, g.jsxs)(
+                      "span",
+                      {
+                        className: "cluster",
+                        children: [
+                          (0, g.jsx)("span", { "aria-hidden": "true", children: "/" }),
+                          (0, g.jsx)("button", {
+                            type: "button",
+                            "data-on": idx === trail.length - 1,
+                            onClick: () => {
+                              (setFolder(M.id), setQ(""), setMarked(!1));
+                            },
+                            children: M.name,
+                          }),
+                        ],
+                      },
+                      M.id,
+                    ),
+                  ),
+                ],
+              }),
+              (0, g.jsx)("input", {
+                className: "field",
+                value: q,
+                placeholder: "Buscar en esta materia",
+                "aria-label": "Buscar tests",
+                onChange: (M) => {
+                  (setQ(M.target.value), setMarked(!1));
+                },
+              }),
+              (0, g.jsxs)("div", {
+                className: "row-actions",
+                children: [
+                  (0, g.jsx)("button", {
+                    type: "button",
+                    className: "btn-line",
+                    "data-on": markedOnly,
+                    onClick: () => {
+                      (setMarked((v) => !v), setQ(""));
+                    },
+                    children: `Marcados ${picked.length}`,
+                  }),
+                ],
+              }),
+              (0, g.jsx)("p", {
+                className: "tiny faint",
+                children:
+                  "Las casillas marcadas ya están en la etiqueta. Quitar la marca y pulsar Aplicar las saca. No se mezclan con otra materia.",
+              }),
+              !broad && foldersHere.length
+                ? (0, g.jsx)("p", { className: "label-kicker", children: "Carpetas" })
+                : null,
+              !broad
+                ? foldersHere.map((M) =>
+                    (0, g.jsxs)(
+                      "button",
+                      {
+                        type: "button",
+                        className: "folder-row",
+                        onClick: () => {
+                          (setFolder(M.id), setQ(""), setMarked(!1));
+                        },
+                        children: [
+                          (0, g.jsx)(Na, { name: M.icon, swatch: M.color }),
+                          (0, g.jsx)("span", { className: "item-label grow", children: M.name }),
+                          (0, g.jsx)("span", { className: "tiny faint", "aria-hidden": "true", children: "›" }),
+                        ],
+                      },
+                      M.id,
+                    ),
+                  )
+                : null,
+              (0, g.jsx)("p", { className: "label-kicker", children: broad ? "Tests" : "Tests" }),
+              testsHere.length === 0
+                ? (0, g.jsx)("p", {
+                    className: "empty",
+                    children: broad ? "Ningún test coincide." : "No hay tests en esta carpeta.",
+                  })
+                : testsHere.map((M) =>
+                    (0, g.jsxs)(
+                      "label",
+                      {
+                        className: "pick-row",
+                        children: [
+                          (0, g.jsx)(Na, { name: M.icon, swatch: Kc(M.color) ? M.color : "stone" }),
+                          (0, g.jsxs)("span", {
+                            className: "grow",
+                            children: [
+                              (0, g.jsx)("span", { className: "item-label", children: M.title }),
+                              broad
+                                ? (0, g.jsx)("span", { className: "tiny faint", children: where(M) })
+                                : null,
+                            ],
+                          }),
+                          (0, g.jsx)("input", {
+                            type: "checkbox",
+                            checked: pickSet.has(M.id),
+                            onChange: () => toggle(M.id),
+                            "aria-label": `Marcar ${M.title}`,
+                          }),
+                        ],
+                      },
+                      M.id,
+                    ),
+                  ),
+              (0, g.jsxs)("div", {
+                className: "pick-apply",
+                children: [
+                  (0, g.jsx)("p", { className: "tiny faint", children: changeText }),
+                  (0, g.jsxs)("div", {
+                    className: "row-actions",
+                    children: [
+                      (0, g.jsx)("button", {
+                        type: "button",
+                        className: "btn-ghost",
+                        onClick: () => x.closeModal(),
+                        children: "Cancelar",
+                      }),
+                      (0, g.jsx)("button", {
+                        type: "button",
+                        className: "btn-primary",
+                        onClick: () => x.applyTagTests(e, subject, picked),
+                        children: "Aplicar",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          })
+        : (0, g.jsxs)("div", {
+            className: "stack",
+            children: [
+              (0, g.jsx)("p", {
+                className: "muted small",
+                children:
+                  "Elige una materia. Dentro puedes marcar tests de varias carpetas. Teoría, psicotécnicos, inglés, ortografía y gramática no se mezclan entre sí.",
+              }),
+              subs.map((M) => {
+                let n = a.tests.filter(
+                  (T2) => !T2.trashedAt && !T2.pool && T2.subjectId === M.id && (T2.tagIds || []).includes(e),
+                ).length;
+                return (0, g.jsxs)(
+                  "button",
+                  {
+                    type: "button",
+                    className: "folder-row",
+                    onClick: () => enter(M.id),
+                    children: [
+                      (0, g.jsx)("span", { className: "item-label grow", children: M.name }),
+                      (0, g.jsx)("span", {
+                        className: "tiny faint",
+                        children: n ? `${n} en la etiqueta` : "Ninguno",
+                      }),
+                      (0, g.jsx)("span", { className: "tiny faint", "aria-hidden": "true", children: "›" }),
+                    ],
+                  },
+                  M.id,
+                );
+              }),
+            ],
+          }),
+    });
+  }
   function Dv({ id: e }) {
     let { data: a } = V(),
       t = a.tags.find((n) => n.id === e);
@@ -23942,6 +24415,12 @@ function Mv({ attemptId: e }) {
             (0, i.jsx)("button", {
               type: "button",
               className: "btn-primary",
+              onClick: () => x.openModal({ type: "tag-tests", tagId: e }),
+              children: "Añadir Test",
+            }),
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "btn-line",
               disabled: !u.some((n) => !n.pool),
               onClick: () => x.openModal({ type: "pool", tagId: e }),
               children: `Crear test de ${t.name}`,
