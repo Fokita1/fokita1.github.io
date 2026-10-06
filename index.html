@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#101210">
 <title>GStudy</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="GStudy">  <rect width="32" height="32" rx="7" fill="%23141210"/>  <path fill="%23ebe6dc" d="M6.5 10.2c2.4-1.6 5-.9 7.2.6v12.4c-2.2-1.3-4.8-1.8-7.2-.4V10.2z"/>  <path fill="%23d4b483" d="M18.3 10.8c2.2-1.5 4.8-2.2 7.2-.6v12.6c-2.4-1.4-5-.9-7.2.4V10.8z"/>  <rect x="15.2" y="9.2" width="1.6" height="15.2" rx="0.4" fill="%23d4b483"/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%20role%3D%22img%22%20aria-label%3D%22GStudy%22%3E%0A%20%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23141210%22%2F%3E%0A%20%20%3Cpath%20fill%3D%22%23ebe6dc%22%20d%3D%22M6.5%2010.2c2.4-1.6%205-.9%207.2.6v12.4c-2.2-1.3-4.8-1.8-7.2-.4V10.2z%22%2F%3E%0A%20%20%3Cpath%20fill%3D%22%23d4b483%22%20d%3D%22M18.3%2010.8c2.2-1.5%204.8-2.2%207.2-.6v12.6c-2.4-1.4-5-.9-7.2.4V10.8z%22%2F%3E%0A%20%20%3Crect%20x%3D%2215.2%22%20y%3D%229.2%22%20width%3D%221.6%22%20height%3D%2215.2%22%20rx%3D%220.4%22%20fill%3D%22%23d4b483%22%2F%3E%0A%3C%2Fsvg%3E">
 <style>
 
 @font-face {
@@ -374,6 +374,12 @@ html[data-theme="light"][data-accent="clay"] {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  border-radius: 0.6rem;
   padding: 0.35rem 0.45rem 0.7rem;
 }
 
@@ -441,12 +447,19 @@ html[data-theme="light"][data-accent="clay"] {
   background: transparent;
   border: 0;
   color: var(--muted);
-  padding: 0.2rem 0;
+  padding: 0.2rem 0.35rem;
   min-height: 2rem;
+  border-radius: 0.45rem;
 }
 
 .crumbs button[data-on="true"] {
   color: var(--fg);
+}
+
+.crumbs button.is-drop,
+.sort-slot.is-drop .item-row {
+  background: color-mix(in oklab, var(--accent) 22%, transparent);
+  outline: 1px dashed var(--accent);
 }
 
 .item-list {
@@ -870,12 +883,114 @@ input[type="radio"] {
   gap: 0.6rem;
   min-height: 3.4rem;
   padding: 0.45rem 0.85rem;
+  padding-right: 7.2rem;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 
+.is-exam .exam-top,
+.is-review .exam-top {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.exam-islands {
+  position: fixed;
+  top: 0.4rem;
+  right: 0.55rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.island {
+  min-width: 5.4rem;
+  min-height: 2.15rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+  text-align: center;
+  box-shadow: 0 8px 22px color-mix(in oklab, black 28%, transparent);
+}
+
+.island-time {
+  background: color-mix(in oklab, var(--fg) 10%, var(--bg));
+  color: var(--fg);
+}
+
+.island-time[data-warn="true"] {
+  color: var(--danger);
+}
+
+.island-grade {
+  background: color-mix(in oklab, var(--danger) 22%, var(--bg));
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 45%, var(--line));
+}
+
+.island-grade[data-ok="true"] {
+  background: color-mix(in oklab, var(--ok) 24%, var(--bg));
+  color: var(--ok);
+  border-color: color-mix(in oklab, var(--ok) 45%, var(--line));
+}
+
+.score[data-ok="true"] { color: var(--ok); }
+.score[data-ok="false"] { color: var(--danger); }
+
+.drag-bubble {
+  position: fixed;
+  left: 50%;
+  top: 18%;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.settings-nav {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 0 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+.settings-nav::-webkit-scrollbar { display: none; }
+.settings-nav button {
+  flex: none;
+  min-height: 2.4rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+}
+.settings-nav button[data-on="true"] {
+  border-color: var(--line);
+  background: var(--elev);
+  color: var(--fg);
+}
+
+.exam-count { white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 819px) {
+  .hide-phone { display: none !important; }
+  .exam-top { gap: 0.25rem; padding-right: 5.6rem; }
+  .island { min-width: 4.4rem; font-size: 1.02rem; padding: 0.15rem 0.45rem; }
+}
 .exam-body {
-  padding: 1.1rem 1rem 6.5rem;
+  padding: 4.6rem 1rem 6.5rem;
   max-width: 44rem;
   margin: 0 auto;
 }
@@ -889,10 +1004,14 @@ input[type="radio"] {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.5rem 0.6rem calc(0.5rem + env(safe-area-inset-bottom));
+  padding: 0.5rem 0.85rem calc(0.5rem + env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid var(--line);
+  overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
 }
+.exam-bar .btn-icon { flex: none; }
 
 .timer {
   font-variant-numeric: tabular-nums;
@@ -1342,8 +1461,12 @@ input[type="radio"] {
   }
   .app-bare {
     display: block;
-    height: auto;
-    overflow: visible;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .app-bare .main.bare {
+    height: 100dvh;
+    overflow: hidden;
   }
   .bottom-nav {
     display: none;
@@ -1371,23 +1494,29 @@ input[type="radio"] {
   .exam-split {
     display: grid;
     grid-template-columns: 16.5rem minmax(0, 1fr);
-    min-height: calc(100dvh - 3.4rem);
+    height: 100dvh;
+    min-height: 0;
+    padding-top: 3.4rem;
+    box-sizing: border-box;
   }
+  .exam-split.is-closed { grid-template-columns: minmax(0, 1fr); }
   .map-desktop {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     border-right: 1px solid var(--line);
-    padding: 1rem 0.8rem 6rem;
-    position: sticky;
-    top: 3.4rem;
-    align-self: start;
-    max-height: calc(100dvh - 3.4rem);
+    padding: 0.8rem 0.8rem 5.5rem;
     overflow: auto;
+    overscroll-behavior: contain;
   }
   .hide-ipad {
     display: none;
   }
   .exam-body {
-    padding-top: 1.6rem;
+    min-height: 0;
+    overflow: auto;
+    padding-top: 1.2rem;
+    overscroll-behavior: contain;
   }
 }
 
@@ -1395,6 +1524,16 @@ input[type="radio"] {
   .main.bare {
     padding: 0;
   }
+  .map-desktop {
+    display: block;
+    max-height: 42vh;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border-bottom: 1px solid var(--line);
+    padding: 0.7rem 0.8rem 0.9rem;
+    margin-top: 3.4rem;
+  }
+  .exam-split.is-closed .exam-body { padding-top: 4.5rem; }
   .field,
   textarea.field {
     font-size: 16px;
@@ -17915,6 +18054,9 @@ REGLAS ABSOLUTAS
       color: "stone",
     };
   }
+  function tyRoot(e) {
+    return { ...ty({ id: null, subjectId: e }), folderId: null };
+  }
   var zl = "gstudy-session",
     lv = () => ({
       settings: kl(),
@@ -18156,6 +18298,7 @@ REGLAS ABSOLUTAS
         $({ ...S.data, folders: [...S.data.folders, t] }),
         G({ modal: null }),
         se("Carpeta creada"));
+      return t.id;
     },
     async createFolderQuiet(e) {
       let a = W(),
@@ -18275,14 +18418,17 @@ REGLAS ABSOLUTAS
         se("Carpeta movida"));
     },
     async moveTest(e, a) {
-      let t = S.data.tests.find((o) => o.id === e),
-        l = S.data.folders.find((o) => o.id === a);
-      if (!t || !l || l.subjectId !== t.subjectId) return;
-      let u = { ...t, folderId: a, updatedAt: W() };
+      let t = S.data.tests.find((o) => o.id === e);
+      if (!t) return;
+      if (a) {
+        let l = S.data.folders.find((o) => o.id === a);
+        if (!l || l.subjectId !== t.subjectId) return;
+      }
+      let u = { ...t, folderId: a || null, updatedAt: W() };
       (await pt(u),
         $({ ...S.data, tests: S.data.tests.map((o) => (o.id === e ? u : o)) }),
         S.editor?.test.id === e &&
-          (S = { ...S, editor: { ...S.editor, test: { ...S.editor.test, folderId: a } } }),
+          (S = { ...S, editor: { ...S.editor, test: { ...S.editor.test, folderId: a || null } } }),
         G({ modal: null }),
         se("Test movido"));
     },
@@ -18417,13 +18563,14 @@ REGLAS ABSOLUTAS
       let l = { ...t, groupId: a || null };
       (await Pf(l), $({ ...S.data, tags: S.data.tags.map((u) => (u.id === e ? l : u)) }));
     },
-    async createTagGroup(e) {
-      let a = String(e || "").trim();
-      if (!a) return;
-      let t = { id: F(), name: a, createdAt: W(), order: W() };
+    async createTagGroup(e, a) {
+      let n = String(e || "").trim();
+      if (!n) return;
+      let t = { id: F(), name: n, createdAt: W(), order: W(), parentId: a || null };
       (await x.updateSettings({ tagGroups: [...(S.data.settings.tagGroups || []), t] }),
         G({ modal: null }),
         se("Grupo creado"));
+      return t.id;
     },
     async renameTagGroup(e, a) {
       let t = String(a || "").trim();
@@ -18434,6 +18581,9 @@ REGLAS ABSOLUTAS
       G({ modal: null });
     },
     async deleteTagGroup(e) {
+      let g = S.data.settings.tagGroups || [],
+        kids = new Set(gKids(g, e)),
+        parent = g.find((t) => t.id === e)?.parentId || null;
       let a = S.data.tags.filter((t) => t.groupId === e);
       for (let t of a) await Pf({ ...t, groupId: null });
       a.length &&
@@ -18442,9 +18592,35 @@ REGLAS ABSOLUTAS
           tags: S.data.tags.map((t) => (t.groupId === e ? { ...t, groupId: null } : t)),
         });
       (await x.updateSettings({
-        tagGroups: (S.data.settings.tagGroups || []).filter((t) => t.id !== e),
+        tagGroups: (S.data.settings.tagGroups || [])
+          .filter((t) => t.id !== e)
+          .map((t) => (kids.has(t.id) && t.parentId === e ? { ...t, parentId: parent } : t)),
       }),
         se("Grupo eliminado. Las etiquetas siguen fuera."));
+    },
+    async moveTagGroup(e, a) {
+      let g = S.data.settings.tagGroups || [],
+        t = g.find((l) => l.id === e);
+      if (!t || a === e) return;
+      if (a && !g.some((l) => l.id === a)) return;
+      if (a && gKids(g, e).includes(a)) {
+        se("No puedes meter un grupo dentro de sí mismo");
+        return;
+      }
+      await x.updateSettings({
+        tagGroups: g.map((l) => (l.id === e ? { ...l, parentId: a || null } : l)),
+      });
+      se("Grupo movido");
+    },
+    async reorderTagGroups(e) {
+      let g = S.data.settings.tagGroups || [],
+        n = new Set(e),
+        o = g
+          .slice()
+          .sort((l, u) => (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0)),
+        s = e.filter((l) => g.some((u) => u.id === l)),
+        d = o.map((l) => (n.has(l.id) ? g.find((u) => u.id === s.shift()) : l)).filter(Boolean);
+      await x.updateSettings({ tagGroups: d.map((l, c) => ({ ...l, order: c })) });
     },
     async startExamSample(e) {
       let a = S.data.settings.examSamples || [];
@@ -18503,9 +18679,9 @@ REGLAS ABSOLUTAS
         se("Etiquetas fusionadas"));
     },
     async createTest(e, a, t, l, u = {}) {
-      let n = S.data.folders.find((s) => s.id === e);
-      if (!n) return;
-      let o = ty(n);
+      let n = e ? S.data.folders.find((s) => s.id === e) : null;
+      if (e && !n) return;
+      let o = n ? ty(n) : tyRoot(S.route?.name === "library" ? S.route.subjectId : S.lastSubject || "teoria");
       ((o.title = a.trim() || "Nuevo test"),
         (o.description = t.trim()),
         (o.tagIds = l),
@@ -19094,7 +19270,7 @@ REGLAS ABSOLUTAS
           ? x.go({ name: "tags" })
           : e === "stats"
             ? x.go({ name: "stats" })
-            : e === "settings" && x.go({ name: "settings" });
+            : e === "settings" && x.go({ name: "settings", section: "perfil" });
   }
   function py(e, a) {
     return a === "library"
@@ -19154,8 +19330,10 @@ REGLAS ABSOLUTAS
               (0, N.jsxs)("div", {
                 className: "side-footer",
                 children: [
-                  (0, N.jsxs)("div", {
+                  (0, N.jsx)("button", {
+                    type: "button",
                     className: "who",
+                    onClick: () => x.go({ name: "settings", section: "perfil" }),
                     children: [
                       (0, N.jsx)("span", {
                         className: "avatar",
@@ -19173,24 +19351,6 @@ REGLAS ABSOLUTAS
                           (0, N.jsx)("div", { className: "tiny faint", children: "Biblioteca local" }),
                         ],
                       }),
-                    ],
-                  }),
-                  (0, N.jsxs)("button", {
-                    type: "button",
-                    className: "nav-link",
-                    onClick: () => x.exportAll(),
-                    children: [
-                      (0, N.jsx)(Zt, { className: "size-4", strokeWidth: 1.5 }),
-                      "Exportar",
-                    ],
-                  }),
-                  (0, N.jsxs)("button", {
-                    type: "button",
-                    className: "nav-link",
-                    onClick: () => x.openModal({ type: "backup" }),
-                    children: [
-                      (0, N.jsx)(hn, { className: "size-4", strokeWidth: 1.5 }),
-                      "Importar",
                     ],
                   }),
                 ],
@@ -19627,10 +19787,14 @@ REGLAS ABSOLUTAS
                               : e.type === "pool"
                                 ? (0, g.jsx)(Nw, { tagId: e.tagId })
                                 : e.type === "tag-group-form"
-                                  ? (0, g.jsx)(TgForm, { groupId: e.groupId })
+                                  ? (0, g.jsx)(TgForm, { groupId: e.groupId, parentId: e.parentId })
                                   : e.type === "exam-sample"
                                     ? (0, g.jsx)(ExSample, {})
-                                    : null;
+                                    : e.type === "pair-folder"
+                                      ? (0, g.jsx)(pairFolder, { a: e.a, b: e.b })
+                                      : e.type === "pair-group"
+                                        ? (0, g.jsx)(pairGroup, { a: e.a, b: e.b })
+                                        : null;
   }
   function fv({ title: e, initial: a, onClose: t, onSave: l }) {
     let [u, o] = (0, te.useState)(a.name),
@@ -19793,16 +19957,24 @@ REGLAS ABSOLUTAS
     let { data: a } = V(),
       t = a.tests.find((u) => u.id === e);
     if (!t) return null;
-    let l = a.folders.filter(
-      (u) => u.subjectId === t.subjectId && !u.trashedAt && u.id !== t.folderId,
-    );
+    let l = a.folders.filter((u) => u.subjectId === t.subjectId && !u.trashedAt && u.id !== t.folderId);
     return (0, g.jsx)(Ue, {
       title: "Mover test",
       onClose: () => x.closeModal(),
       children: (0, g.jsxs)("div", {
         className: "stack",
         children: [
-          l.length === 0
+          t.folderId
+            ? (0, g.jsx)("button", {
+                type: "button",
+                className: "menu-item",
+                onClick: () => {
+                  x.moveTest(e, null);
+                },
+                children: al(t.subjectId),
+              })
+            : null,
+          l.length === 0 && !t.folderId
             ? (0, g.jsx)("p", {
                 className: "muted",
                 children: "No hay otra carpeta en esta materia.",
@@ -20756,7 +20928,7 @@ REGLAS ABSOLUTAS
       case "stats":
         return (0, i.jsx)(Ev, {});
       case "settings":
-        return (0, i.jsx)(Bv, {});
+        return (0, i.jsx)(Bv, { section: e.section || "perfil" });
       case "trash":
         return (0, i.jsx)(Rv, {});
       default:
@@ -20965,6 +21137,38 @@ REGLAS ABSOLUTAS
       ],
     });
   }
+  function gKids(e, a) {
+    let t = [],
+      l = (u) => {
+        for (let o of e) if ((o.parentId || null) === u) (t.push(o.id), l(o.id));
+      };
+    return (l(a), t);
+  }
+  function gChain(e, a) {
+    let t = [],
+      l = a,
+      u = new Set();
+    for (; l && !u.has(l); ) {
+      u.add(l);
+      let o = e.find((n) => n.id === l);
+      if (!o) break;
+      (t.unshift(o), (l = o.parentId || null));
+    }
+    return t;
+  }
+  var dragLive = null;
+  function dragBubble(text) {
+    let e = document.querySelector(".drag-bubble");
+    if (!text) {
+      e?.remove();
+      return;
+    }
+    e ||
+      ((e = document.createElement("div")),
+      (e.className = "drag-bubble"),
+      document.body.appendChild(e));
+    e.textContent = text;
+  }
   function Qs({ items: e, viewClass: a, kind: t, within: scope }) {
     let [l, u] = (0, Be.useState)(null),
       o = (0, Be.useRef)(null),
@@ -21010,7 +21214,7 @@ REGLAS ABSOLUTAS
     });
     (0, Be.useEffect)(
       () => () => {
-        (n.current?.remove(), document.body.classList.remove("is-reordering"));
+        dragLive || (n.current?.remove(), document.body.classList.remove("is-reordering"));
       },
       [],
     );
@@ -21087,6 +21291,15 @@ REGLAS ABSOLUTAS
                     }));
                   let ne = h.indexOf(w);
                   ((m.current = ne), u({ id: w, to: ne }));
+                  dragLive = {
+                    kind: t,
+                    id: w,
+                    floater: te2,
+                    hold: null,
+                    target: null,
+                    bubble: !1,
+                    moved: !1,
+                  };
                   try {
                     p.setPointerCapture?.(L);
                   } catch {}
@@ -21109,6 +21322,43 @@ REGLAS ABSOLUTAS
                   ((ee.style.left = B.clientX - n.offset.dx + "px"),
                     (ee.style.top = B.clientY - n.offset.dy + "px"));
                 }
+                let hit = document.elementFromPoint(B.clientX, B.clientY),
+                  slot = hit?.closest?.("[data-drop]"),
+                  key = slot ? `${slot.dataset.drop}:${slot.dataset.id || ""}` : "",
+                  live = dragLive;
+                if (live) {
+                  if (live.target !== key) {
+                    (window.clearTimeout(live.hold),
+                      (live.hold = null),
+                      (live.bubble = !1),
+                      dragBubble(null),
+                      document.querySelectorAll(".is-drop").forEach((el) => el.classList.remove("is-drop")),
+                      (live.target = key),
+                      slot && slot.classList.add("is-drop"));
+                    let nest = slot && slot.dataset.drop === t && slot.dataset.id !== w;
+                    if (nest) {
+                      let box = slot.getBoundingClientRect(),
+                        cx = Math.abs(B.clientX - (box.left + box.width / 2)) < box.width * 0.28,
+                        cy = Math.abs(B.clientY - (box.top + box.height / 2)) < box.height * 0.42;
+                      if (cx && cy)
+                        live.hold = window.setTimeout(() => {
+                          live.bubble = !0;
+                          dragBubble(t === "test" ? "Crear carpeta" : t === "tag" ? "Crear grupo" : null);
+                          try {
+                            navigator.vibrate?.(8);
+                          } catch {}
+                        }, 500);
+                    } else if (slot && slot.dataset.drop === "crumb")
+                      live.hold = window.setTimeout(() => {
+                        live.moved = !0;
+                        openCrumb(slot.dataset.kind, slot.dataset.id || "");
+                      }, 500);
+                  }
+                }
+                if (slot) {
+                  u((ne) => (ne && ne.to !== m.current ? { ...ne, to: m.current } : ne));
+                  return;
+                }
                 let te2 = C(v({ x: B.clientX, y: B.clientY }, w), w);
                 te2 !== m.current && ((m.current = te2), u((ne) => (ne ? { ...ne, to: te2 } : ne)));
               },
@@ -21128,17 +21378,27 @@ REGLAS ABSOLUTAS
                   (z(), window.clearTimeout(H));
                   if (!O) return;
                   s.current = !0;
-                  let ee = m.current,
-                    te2 = h.slice(),
-                    ne = te2.indexOf(w);
-                  (n.current?.remove(),
+                  let live = dragLive,
+                    hit = document.elementFromPoint(B.clientX, B.clientY)?.closest?.("[data-drop]"),
+                    bubble = !!live?.bubble,
+                    navigated = !!live?.moved;
+                  (window.clearTimeout(live?.hold),
+                    dragBubble(null),
+                    document.querySelectorAll(".is-drop").forEach((el) => el.classList.remove("is-drop")),
+                    (dragLive = null),
+                    n.current?.remove(),
                     (n.current = null),
                     document.body.classList.remove("is-reordering"),
                     u(null));
+                  if (hit && dropOn(t, w, hit, bubble)) return;
+                  if (navigated) return;
+                  let ee = m.current,
+                    te2 = h.slice(),
+                    ne = te2.indexOf(w);
                   if (ne >= 0 && ee !== ne) {
                     let fe = te2.splice(ne, 1)[0];
                     (te2.splice(ee, 0, fe),
-                      scope ? x.reorderWithin(t, te2) : t === "tag" ? x.reorderTags(te2) : x.reorderLibrary(t, te2));
+                      scope ? x.reorderWithin(t, te2) : t === "tag" ? x.reorderTags(te2) : t === "group" ? x.reorderTagGroups(te2) : x.reorderLibrary(t, te2));
                   }
                 };
               (window.addEventListener("pointermove", D, { passive: !1 }),
@@ -21147,7 +21407,7 @@ REGLAS ABSOLUTAS
                 window.addEventListener("touchmove", onTouch, { passive: !1, capture: !0 }),
                 window.addEventListener("wheel", onTouch, { passive: !1, capture: !0 }));
             },
-            children: t === "folder" ? (0, i.jsx)(ec, { id: w }) : t === "tag" ? (0, i.jsx)(tagRow, { id: w }) : (0, i.jsx)(ac, { id: w }),
+            children: t === "folder" ? (0, i.jsx)(ec, { id: w }) : t === "tag" ? (0, i.jsx)(tagRow, { id: w }) : t === "group" ? (0, i.jsx)(groupRow, { id: w }) : (0, i.jsx)(ac, { id: w }),
           },
           w,
         ),
@@ -21155,6 +21415,61 @@ REGLAS ABSOLUTAS
     });
   }
 
+  function openCrumb(kind, id) {
+    if (kind === "lib") {
+      let [subjectId, folderId] = id.split(":");
+      x.go({ name: "library", subjectId, folderId: folderId || null });
+    } else if (kind === "tags") x.go({ name: id ? "tag-group" : "tags", groupId: id || void 0 });
+  }
+  function dropOn(kind, id, el, bubble) {
+    let drop = el.dataset.drop,
+      dest = el.dataset.id || null;
+    if (drop === "crumb") {
+      if (el.dataset.kind === "lib") {
+        let [subjectId, folderId] = (dest || "").split(":");
+        folderId = folderId || null;
+        if (kind === "folder") {
+          let f = S.data.folders.find((o) => o.id === id);
+          if (!f || f.subjectId !== subjectId) return !1;
+          if ((f.parentId || null) !== folderId) x.moveFolder(id, folderId);
+          return !0;
+        }
+        if (kind === "test") {
+          let t = S.data.tests.find((o) => o.id === id);
+          if (!t || t.subjectId !== subjectId) return !1;
+          if ((t.folderId || null) !== folderId) x.moveTest(id, folderId);
+          return !0;
+        }
+      }
+      if (el.dataset.kind === "tags" && (kind === "tag" || kind === "group")) {
+        if (kind === "tag") x.setTagGroup(id, dest || null);
+        else x.moveTagGroup(id, dest || null);
+        return !0;
+      }
+      return !1;
+    }
+    if (bubble && drop === kind && dest && dest !== id && (kind === "test" || kind === "tag")) {
+      x.openModal({ type: kind === "test" ? "pair-folder" : "pair-group", a: id, b: dest });
+      return !0;
+    }
+    if (kind === "folder" && drop === "folder" && dest && dest !== id) {
+      x.moveFolder(id, dest);
+      return !0;
+    }
+    if (kind === "test" && drop === "folder") {
+      x.moveTest(id, dest);
+      return !0;
+    }
+    if (kind === "tag" && drop === "group") {
+      x.setTagGroup(id, dest);
+      return !0;
+    }
+    if (kind === "group" && drop === "group" && dest && dest !== id) {
+      x.moveTagGroup(id, dest);
+      return !0;
+    }
+    return !1;
+  }
   function Iv({ subjectId: e, folderId: a }) {
     let { data: t } = V(),
       [l, u] = (0, Be.useState)("");
@@ -21167,13 +21482,11 @@ REGLAS ABSOLUTAS
         s,
         (v) => v.name,
       ),
-      f = a
-        ? _f(
-            t.tests.filter((v) => v.folderId === a && !v.trashedAt),
-            s,
-            (v) => v.title,
-          )
-        : [],
+      f = _f(
+        t.tests.filter((v) => (v.folderId || null) === (a || null) && v.subjectId === e && !v.trashedAt),
+        s,
+        (v) => v.title,
+      ),
       m = l.trim().toLowerCase(),
       h = m
         ? t.folders.filter(
@@ -21219,6 +21532,9 @@ REGLAS ABSOLUTAS
             (0, i.jsx)("button", {
               type: "button",
               "data-on": !a,
+              "data-drop": "crumb",
+              "data-kind": "lib",
+              "data-id": e,
               onClick: () => {
                 x.go({ name: "library", subjectId: e, folderId: null });
               },
@@ -21234,6 +21550,9 @@ REGLAS ABSOLUTAS
                     (0, i.jsx)("button", {
                       type: "button",
                       "data-on": w === n.length - 1,
+                      "data-drop": "crumb",
+                      "data-kind": "lib",
+                      "data-id": `${e}:${v.id}`,
                       onClick: () => {
                         x.go({ name: "library", subjectId: e, folderId: v.id });
                       },
@@ -21273,7 +21592,7 @@ REGLAS ABSOLUTAS
                 x.openModal({ type: "folder-form", mode: "create", subjectId: e, parentId: a }),
               children: "Nueva carpeta",
             }),
-            a
+            a || !0
               ? (0, i.jsx)("button", {
                   type: "button",
                   className: "btn-primary",
@@ -21287,7 +21606,7 @@ REGLAS ABSOLUTAS
           ? null
           : (0, i.jsx)("p", {
               className: "tiny faint",
-              children: "Mantén pulsado una carpeta o un test para cambiar su orden.",
+              children: "Mantén pulsado para ordenar. Suéltalo sobre una carpeta para meterlo dentro. Sobre otro test, espera a “Crear carpeta”.",
             }),
         m
           ? (0, i.jsxs)("div", {
@@ -21320,8 +21639,8 @@ REGLAS ABSOLUTAS
                   ? (0, i.jsx)("p", {
                       className: "empty",
                       children: a
-                        ? "Esta carpeta est\xE1 vac\xEDa."
-                        : "Todav\xEDa no hay carpetas en esta materia.",
+                        ? "Esta carpeta está vacía."
+                        : "Todavía no hay nada en esta materia.",
                     })
                   : null,
               ],
@@ -21336,6 +21655,8 @@ REGLAS ABSOLUTAS
       ? (0, i.jsxs)("div", {
           className: "item-row" + (t.bordered ? " is-bordered" : ""),
           style: t.bordered ? { "--led": ledOf(t.color) } : void 0,
+          "data-drop": "folder",
+          "data-id": t.id,
           children: [
             (0, i.jsxs)("button", {
               type: "button",
@@ -21374,6 +21695,8 @@ REGLAS ABSOLUTAS
       ? (0, i.jsxs)("div", {
           className: "item-row" + (t.pool ? " is-pool" : "") + (t.bordered ? " is-bordered" : ""),
           style: t.bordered ? { "--led": ledOf(Kc(t.color) ? t.color : "stone") } : void 0,
+          "data-drop": "test",
+          "data-id": t.id,
           children: [
             (0, i.jsxs)("button", {
               type: "button",
@@ -21825,8 +22148,11 @@ function Mv({ attemptId: e }) {
       t = a.attempts.find((p) => p.id === e),
       [l, u] = (0, Be.useState)(0),
       [o, n] = (0, Be.useState)(!1),
+      [mapOn, setMapOn] = (0, Be.useState)(!0),
+      [pop, setPop] = (0, Be.useState)(null),
       [s, d] = (0, Be.useState)(() => Date.now()),
-      f = (0, Be.useRef)(null);
+      f = (0, Be.useRef)(null),
+      mapRef = (0, Be.useRef)(null);
     if (
       ((0, Be.useEffect)(() => {
         if (!t) return;
@@ -21881,6 +22207,10 @@ function Mv({ attemptId: e }) {
       (0, Be.useEffect)(() => {
         t?.finishedAt && x.go({ name: "result", attemptId: t.id });
       }, [t]),
+      (0, Be.useEffect)(() => {
+        let p = mapRef.current?.querySelector('.qdot[data-on="true"]');
+        p?.scrollIntoView({ block: "nearest" });
+      }, [l, mapOn]),
       !t)
     )
       return (0, i.jsx)("p", { className: "empty", children: "No se encuentra el intento." });
@@ -21893,9 +22223,15 @@ function Mv({ attemptId: e }) {
       w = !t.pauseAt && v <= 6e4,
       y = m ? t.markedQuestions.includes(m) : !1,
       k = t.delivery === "review",
-      E = !!(m && (t.revealed ?? []).includes(m));
+      E = !!(m && (t.revealed ?? []).includes(m)),
+      live = FL(t),
+      gradeText = live.scaleMax != null ? XC(live.score) : String(live.errors),
+      answeredN = t.questionOrder.filter((p) => (t.answersGiven[p] ?? []).length > 0).length,
+      spent = spentSec(t, s),
+      timePct = t.durationSec ? Math.min(100, Math.round((spent / t.durationSec) * 100)) : 0,
+      ansPct = t.questionOrder.length ? Math.round((answeredN / t.questionOrder.length) * 100) : 0;
     return (0, i.jsxs)("div", {
-      className: k ? "is-review" : "is-exam",
+      className: (k ? "is-review" : "is-exam") + (mapOn ? "" : " map-off"),
       children: [
         (0, i.jsxs)("header", {
           className: "exam-top",
@@ -21912,12 +22248,20 @@ function Mv({ attemptId: e }) {
               },
               children: "Salir",
             }),
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "btn-icon map-toggle",
+              "aria-label": mapOn ? "Ocultar preguntas" : "Ver preguntas",
+              "aria-expanded": mapOn,
+              onClick: () => setMapOn((p) => !p),
+              children: (0, i.jsx)(dn, { className: "size-4", strokeWidth: 1.5 }),
+            }),
             (0, i.jsxs)("span", {
-              className: "grow tabular small",
-              children: [String(l + 1).padStart(2, "0"), " / ", t.questionOrder.length],
+              className: "grow tabular small exam-count",
+              children: [l + 1, "/", t.questionOrder.length],
             }),
             (0, i.jsx)("span", {
-              className: "mode-chip",
+              className: "mode-chip hide-phone",
               children: k ? "Repaso" : "Examen",
             }),
             (0, i.jsx)("button", {
@@ -21928,12 +22272,27 @@ function Mv({ attemptId: e }) {
               onClick: () => x.setPause(t.id, !t.pauseAt),
               children: (0, i.jsx)(EyeMark, { off: !!t.pauseAt }),
             }),
-            (0, i.jsx)("span", {
-              className: "timer",
+          ],
+        }),
+        (0, i.jsxs)("div", {
+          className: "exam-islands",
+          children: [
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "island island-time",
               "data-warn": w,
               "data-paused": t.pauseAt ? "true" : "false",
-              "aria-live": "polite",
+              "aria-label": "Tiempo restante",
+              onClick: () => setPop("time"),
               children: UL(v),
+            }),
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "island island-grade",
+              "data-ok": live.apto ? "true" : "false",
+              "aria-label": live.apto ? "Nota actual, apto" : "Nota actual, no apto",
+              onClick: () => setPop("grade"),
+              children: gradeText,
             }),
           ],
         }),
@@ -21941,15 +22300,18 @@ function Mv({ attemptId: e }) {
           ? (0, i.jsx)("p", { className: "warn-line", children: "Queda menos de un minuto." })
           : null,
         (0, i.jsxs)("div", {
-          className: "exam-split",
+          className: "exam-split" + (mapOn ? "" : " is-closed"),
           children: [
-            (0, i.jsxs)("aside", {
-              className: "map-desktop",
-              children: [
-                (0, i.jsx)("p", { className: "label-kicker", children: "Preguntas" }),
-                (0, i.jsx)(Sy, { attempt: t, index: l, onPick: u }),
-              ],
-            }),
+            mapOn
+              ? (0, i.jsxs)("aside", {
+                  className: "map-desktop",
+                  ref: mapRef,
+                  children: [
+                    (0, i.jsx)("p", { className: "label-kicker", children: "Preguntas" }),
+                    (0, i.jsx)(Sy, { attempt: t, index: l, onPick: u }),
+                  ],
+                })
+              : null,
             (0, i.jsxs)("div", {
               className: "exam-body",
               onTouchStart: (p) => {
@@ -22114,6 +22476,88 @@ function Mv({ attemptId: e }) {
               }),
             })
           : null,
+        pop === "time"
+          ? (0, i.jsx)(Ue, {
+              title: "Tiempo",
+              onClose: () => setPop(null),
+              children: (0, i.jsxs)("div", {
+                className: "stack",
+                children: [
+                  (0, i.jsxs)("p", {
+                    className: "spread",
+                    children: [
+                      (0, i.jsx)("span", { className: "muted", children: "Tiempo total" }),
+                      (0, i.jsx)("span", { className: "tabular", children: El(t.durationSec) }),
+                    ],
+                  }),
+                  (0, i.jsxs)("p", {
+                    className: "spread",
+                    children: [
+                      (0, i.jsx)("span", { className: "muted", children: "Llevas" }),
+                      (0, i.jsx)("span", { className: "tabular", children: El(spent) }),
+                    ],
+                  }),
+                  (0, i.jsxs)("p", {
+                    className: "spread",
+                    children: [
+                      (0, i.jsx)("span", { className: "muted", children: "Te queda" }),
+                      (0, i.jsx)("span", { className: "tabular", children: UL(v) }),
+                    ],
+                  }),
+                  (0, i.jsxs)("p", {
+                    className: "spread group-gap",
+                    children: [
+                      (0, i.jsxs)("span", { children: [ansPct, "% respondidas"] }),
+                      (0, i.jsxs)("span", { children: [timePct, "% del tiempo"] }),
+                    ],
+                  }),
+                  (0, i.jsxs)("p", {
+                    className: "tiny faint",
+                    children: [answeredN, " de ", t.questionOrder.length, " preguntas"],
+                  }),
+                ],
+              }),
+            })
+          : null,
+        pop === "grade"
+          ? (0, i.jsx)(Ue, {
+              title: "Nota ahora",
+              onClose: () => setPop(null),
+              children: (0, i.jsxs)("div", {
+                className: "stack",
+                children: [
+                  (0, i.jsx)("p", {
+                    className: "score",
+                    "data-ok": live.apto ? "true" : "false",
+                    children: gradeText,
+                  }),
+                  (0, i.jsx)("p", {
+                    className: "verdict",
+                    "data-ok": live.apto,
+                    children: live.apto ? "Apto" : "No apto",
+                  }),
+                  (0, i.jsx)("p", {
+                    className: "lead",
+                    children:
+                      live.scaleMax != null
+                        ? `Si terminas ahora, el test sería ${live.apto ? "apto" : "no apto"} con una nota de ${gradeText}/${live.scaleMax}.`
+                        : `Si terminas ahora, el test sería ${live.apto ? "apto" : "no apto"} con ${live.errors} ${live.errors === 1 ? "error" : "errores"}.`,
+                  }),
+                  (0, i.jsxs)("p", {
+                    className: "tiny faint",
+                    children: [
+                      live.correct,
+                      " correctas · ",
+                      live.incorrect,
+                      " incorrectas · ",
+                      live.blank,
+                      " en blanco. Las que aún no has contestado cuentan como blancas.",
+                    ],
+                  }),
+                ],
+              }),
+            })
+          : null,
         (0, i.jsxs)("div", {
           className: "exam-bar",
           children: [
@@ -22135,7 +22579,7 @@ function Mv({ attemptId: e }) {
             }),
             (0, i.jsx)("button", {
               type: "button",
-              className: "btn-icon hide-ipad",
+              className: "btn-icon" + (mapOn ? " hide-ipad" : ""),
               "aria-label": "Lista de preguntas",
               onClick: () => n(!0),
               children: (0, i.jsx)(dn, { className: "size-5", strokeWidth: 1.5 }),
@@ -23003,6 +23447,8 @@ function Mv({ attemptId: e }) {
       ).length;
     return (0, i.jsxs)("div", {
       className: "item-row",
+      "data-drop": "tag",
+      "data-id": t.id,
       children: [
         (0, i.jsxs)("button", {
           type: "button",
@@ -23025,17 +23471,17 @@ function Mv({ attemptId: e }) {
       ],
     });
   }
-  function TgForm({ groupId: e }) {
+  function TgForm({ groupId: e, parentId: pid }) {
     let { data: a } = V(),
       t = (a.settings.tagGroups || []).find((l) => l.id === e),
       [l, u] = (0, te.useState)(t?.name ?? "");
     return (0, g.jsx)(Ue, {
-      title: t ? "Editar grupo" : "Crear grupo",
+      title: t ? "Editar grupo" : pid ? "Crear subgrupo" : "Crear grupo",
       onClose: () => x.closeModal(),
       children: (0, g.jsxs)("form", {
         className: "stack",
         onSubmit: (o) => {
-          (o.preventDefault(), t ? x.renameTagGroup(t.id, l) : x.createTagGroup(l));
+          (o.preventDefault(), t ? x.renameTagGroup(t.id, l) : x.createTagGroup(l, pid || null));
         },
         children: [
           (0, g.jsx)("p", {
@@ -23077,6 +23523,82 @@ function Mv({ attemptId: e }) {
       }),
     });
   }
+  function pairFolder({ a: idA, b: idB }) {
+    let { data } = V(),
+      A = data.tests.find((t) => t.id === idA),
+      B = data.tests.find((t) => t.id === idB);
+    if (!A || !B) return null;
+    return (0, g.jsx)(fv, {
+      title: "Crear carpeta",
+      initial: { name: "", icon: "book", color: "brass", description: "", pinned: !1, bordered: !1 },
+      onClose: () => x.closeModal(),
+      onSave: async (l) => {
+        let parent = A.folderId && data.folders.some((f) => f.id === A.folderId) ? A.folderId : null;
+        let id = await x.createFolder({ ...l, subjectId: A.subjectId, parentId: parent });
+        if (!id) return;
+        await x.moveTest(A.id, id);
+        await x.moveTest(B.id, id);
+      },
+    });
+  }
+  function pairGroup({ a: idA, b: idB }) {
+    let { data } = V(),
+      A = data.tags.find((t) => t.id === idA),
+      B = data.tags.find((t) => t.id === idB);
+    if (!A || !B) return null;
+    let [name, setName] = (0, te.useState)("");
+    return (0, g.jsx)(Ue, {
+      title: "Crear grupo",
+      onClose: () => x.closeModal(),
+      children: (0, g.jsxs)("form", {
+        className: "stack",
+        onSubmit: async (ev) => {
+          ev.preventDefault();
+          let parent = A.groupId && (data.settings.tagGroups || []).some((g) => g.id === A.groupId) ? A.groupId : null;
+          let id = await x.createTagGroup(name, parent);
+          if (!id) return;
+          await x.setTagGroup(A.id, id);
+          await x.setTagGroup(B.id, id);
+        },
+        children: [
+          (0, g.jsx)("p", {
+            className: "muted small",
+            children: `${A.name} y ${B.name} quedarán dentro del grupo.`,
+          }),
+          (0, g.jsxs)("div", {
+            className: "field-label",
+            children: [
+              "Nombre",
+              (0, g.jsx)("input", {
+                className: "field",
+                value: name,
+                onChange: (ev) => setName(ev.target.value),
+                required: !0,
+                maxLength: 60,
+              }),
+            ],
+          }),
+          (0, g.jsxs)("div", {
+            className: "row-actions",
+            children: [
+              (0, g.jsx)("button", {
+                type: "button",
+                className: "btn-ghost",
+                onClick: () => x.closeModal(),
+                children: "Cancelar",
+              }),
+              (0, g.jsx)("button", {
+                type: "submit",
+                className: "btn-primary",
+                disabled: !name.trim(),
+                children: "Crear",
+              }),
+            ],
+          }),
+        ],
+      }),
+    });
+  }
   function ExSample() {
     let { data: e } = V(),
       a = e.settings.examSamples || [];
@@ -23108,10 +23630,41 @@ function Mv({ attemptId: e }) {
       }),
     });
   }
+  function groupRow({ id: e }) {
+    let { data: a } = V(),
+      t = (a.settings.tagGroups || []).find((l) => l.id === e);
+    if (!t) return null;
+    let n =
+      a.tags.filter((l) => l.groupId === e).length +
+      (a.settings.tagGroups || []).filter((l) => l.parentId === e).length;
+    return (0, i.jsxs)("div", {
+      className: "item-row",
+      "data-drop": "group",
+      "data-id": t.id,
+      children: [
+        (0, i.jsxs)("button", {
+          type: "button",
+          className: "item-open",
+          onClick: () => x.go({ name: "tag-group", groupId: t.id }),
+          children: [
+            (0, i.jsx)(Na, { name: "library", swatch: "brass" }),
+            (0, i.jsx)("span", { className: "item-label", children: t.name }),
+            (0, i.jsx)("span", { className: "tiny faint right", children: n }),
+          ],
+        }),
+        (0, i.jsx)("button", {
+          type: "button",
+          className: "btn-ghost",
+          onClick: () => x.openModal({ type: "tag-group-form", groupId: t.id }),
+          children: "Editar",
+        }),
+      ],
+    });
+  }
   function kv() {
     let { data: e } = V(),
-      a = e.settings.tagGroups || [],
-      t = e.tags.filter((l) => !l.groupId || !a.some((u) => u.id === l.groupId));
+      groups = (e.settings.tagGroups || []).filter((l) => !l.parentId),
+      loose = e.tags.filter((l) => !l.groupId || !(e.settings.tagGroups || []).some((u) => u.id === l.groupId));
     return (0, i.jsxs)("div", {
       className: "copy",
       children: [
@@ -23130,7 +23683,7 @@ function Mv({ attemptId: e }) {
                 (0, i.jsx)("button", {
                   type: "button",
                   className: "btn-line",
-                  onClick: () => x.openModal({ type: "tag-group-form" }),
+                  onClick: () => x.openModal({ type: "tag-group-form", parentId: null }),
                   children: "Crear Grupo",
                 }),
                 (0, i.jsx)("button", {
@@ -23143,74 +23696,55 @@ function Mv({ attemptId: e }) {
             }),
           ],
         }),
+        (0, i.jsxs)("nav", {
+          className: "crumbs",
+          "aria-label": "Ruta",
+          children: (0, i.jsx)("button", {
+            type: "button",
+            "data-on": !0,
+            "data-drop": "crumb",
+            "data-kind": "tags",
+            "data-id": "",
+            children: "Etiquetas",
+          }),
+        }),
         (0, i.jsx)("p", {
           className: "tiny faint",
           children:
-            "Los grupos solo organizan etiquetas. Una etiqueta suelta sirve para todos los temas.",
+            "Mantén pulsado para ordenar. Suéltalo sobre un grupo para meterlo. Sobre otra etiqueta, espera a “Crear grupo”.",
         }),
-        a.length
+        groups.length
           ? (0, i.jsx)("p", { className: "label-kicker section-label", children: "Grupos" })
           : null,
-        a
-          .slice()
-          .sort((l, u) => (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0))
-          .map((l) => {
-            let u = e.tags.filter((o) => o.groupId === l.id).length;
-            return (0, i.jsxs)(
-              "div",
-              {
-                className: "item-row",
-                children: [
-                  (0, i.jsxs)("button", {
-                    type: "button",
-                    className: "item-open",
-                    onClick: () => x.go({ name: "tag-group", groupId: l.id }),
-                    children: [
-                      (0, i.jsx)(Na, { name: "library", swatch: "brass" }),
-                      (0, i.jsx)("span", { className: "item-label", children: l.name }),
-                      (0, i.jsx)("span", { className: "tiny faint right", children: u }),
-                    ],
-                  }),
-                  (0, i.jsx)("button", {
-                    type: "button",
-                    className: "btn-ghost",
-                    onClick: () => x.openModal({ type: "tag-group-form", groupId: l.id }),
-                    children: "Editar",
-                  }),
-                ],
-              },
-              l.id,
-            );
-          }),
-        t.length || a.length
+        (0, i.jsx)(Qs, {
+          items: groups
+            .slice()
+            .sort((l, u) => (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0))
+            .map((l) => ({ id: l.id, pinned: !1 })),
+          viewClass: "item-list",
+          kind: "group",
+        }),
+        loose.length
           ? (0, i.jsx)("p", { className: "label-kicker section-label", children: "Sin grupo" })
           : null,
-        e.tags.length === 0 && a.length === 0
+        e.tags.length === 0 && groups.length === 0
           ? (0, i.jsx)("p", {
               className: "empty",
               children: "Crea una etiqueta o un grupo para ordenarlas.",
             })
           : null,
-        t.length
-          ? (0, i.jsxs)(i.Fragment, {
-              children: [
-                (0, i.jsx)("p", {
-                  className: "tiny faint",
-                  children: "Mant\u00e9n pulsada una etiqueta para cambiar su orden.",
-                }),
-                (0, i.jsx)(Qs, {
-                  items: t
-                    .slice()
-                    .sort(
-                      (l, u) =>
-                        (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0) ||
-                        l.name.localeCompare(u.name, "es"),
-                    )
-                    .map((l) => ({ id: l.id, pinned: !1 })),
-                  viewClass: "item-list",
-                  kind: "tag",
-                }),
-              ],
+        loose.length
+          ? (0, i.jsx)(Qs, {
+              items: loose
+                .slice()
+                .sort(
+                  (l, u) =>
+                    (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0) ||
+                    l.name.localeCompare(u.name, "es"),
+                )
+                .map((l) => ({ id: l.id, pinned: !1 })),
+              viewClass: "item-list",
+              kind: "tag",
             })
           : null,
       ],
@@ -23221,16 +23755,47 @@ function Mv({ attemptId: e }) {
       t = (a.settings.tagGroups || []).find((n) => n.id === e),
       [l, u] = (0, te.useState)("");
     if (!t) return (0, i.jsx)("p", { className: "empty", children: "Grupo no encontrado." });
-    let o = a.tags.filter((n) => n.groupId === e),
+    let chain = gChain(a.settings.tagGroups || [], e),
+      kids = (a.settings.tagGroups || []).filter((n) => n.parentId === e),
+      o = a.tags.filter((n) => n.groupId === e),
       n = a.tags.filter((s) => s.groupId !== e);
     return (0, i.jsxs)("div", {
       className: "copy",
       children: [
-        (0, i.jsxs)("button", {
-          type: "button",
-          className: "btn-ghost",
-          onClick: () => x.go({ name: "tags" }),
-          children: [(0, i.jsx)(Ma, { className: "size-4", strokeWidth: 1.5 }), "Etiquetas"],
+        (0, i.jsxs)("nav", {
+          className: "crumbs",
+          "aria-label": "Ruta",
+          children: [
+            (0, i.jsx)("button", {
+              type: "button",
+              "data-drop": "crumb",
+              "data-kind": "tags",
+              "data-id": "",
+              onClick: () => x.go({ name: "tags" }),
+              children: "Etiquetas",
+            }),
+            chain.map((v, w) =>
+              (0, i.jsxs)(
+                "span",
+                {
+                  className: "cluster",
+                  children: [
+                    (0, i.jsx)("span", { "aria-hidden": "true", children: "/" }),
+                    (0, i.jsx)("button", {
+                      type: "button",
+                      "data-on": w === chain.length - 1,
+                      "data-drop": "crumb",
+                      "data-kind": "tags",
+                      "data-id": v.id,
+                      onClick: () => x.go({ name: "tag-group", groupId: v.id }),
+                      children: v.name,
+                    }),
+                  ],
+                },
+                v.id,
+              ),
+            ),
+          ],
         }),
         (0, i.jsx)("header", {
           className: "page-head",
@@ -23253,6 +23818,12 @@ function Mv({ attemptId: e }) {
             (0, i.jsx)("button", {
               type: "button",
               className: "btn-line",
+              onClick: () => x.openModal({ type: "tag-group-form", parentId: e }),
+              children: "Crear subgrupo",
+            }),
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "btn-line",
               onClick: () => x.openModal({ type: "tag-group-form", groupId: e }),
               children: "Renombrar",
             }),
@@ -23262,7 +23833,7 @@ function Mv({ attemptId: e }) {
               onClick: async () => {
                 (await x.askConfirm({
                   title: "Eliminar grupo",
-                  body: "Las etiquetas no se borran: se quedan sueltas.",
+                  body: "Las etiquetas de este grupo se quedan sueltas. Los subgrupos pasan al nivel de arriba.",
                   confirmLabel: "Eliminar grupo",
                   danger: !0,
                 })) && (await x.deleteTagGroup(e), x.go({ name: "tags" }));
@@ -23271,9 +23842,38 @@ function Mv({ attemptId: e }) {
             }),
           ],
         }),
-        o.length === 0
-          ? (0, i.jsx)("p", { className: "empty", children: "Este grupo est\u00e1 vac\u00edo." })
-          : o.map((s) => (0, i.jsx)(tagRow, { id: s.id }, s.id)),
+        kids.length
+          ? (0, i.jsxs)(i.Fragment, {
+              children: [
+                (0, i.jsx)("p", { className: "label-kicker section-label", children: "Subgrupos" }),
+                (0, i.jsx)(Qs, {
+                  items: kids
+                    .slice()
+                    .sort((s, d) => (s.order ?? 0) - (d.order ?? 0))
+                    .map((s) => ({ id: s.id, pinned: !1 })),
+                  viewClass: "item-list",
+                  kind: "group",
+                }),
+              ],
+            })
+          : null,
+        o.length
+          ? (0, i.jsxs)(i.Fragment, {
+              children: [
+                (0, i.jsx)("p", { className: "label-kicker section-label", children: "Etiquetas" }),
+                (0, i.jsx)(Qs, {
+                  items: o
+                    .slice()
+                    .sort((s, d) => (s.order ?? 0) - (d.order ?? 0) || s.name.localeCompare(d.name, "es"))
+                    .map((s) => ({ id: s.id, pinned: !1 })),
+                  viewClass: "item-list",
+                  kind: "tag",
+                }),
+              ],
+            })
+          : kids.length
+            ? null
+            : (0, i.jsx)("p", { className: "empty", children: "Este grupo está vacío." }),
         n.length
           ? (0, i.jsxs)("div", {
               className: "row-actions group-gap",
@@ -23871,9 +24471,20 @@ function Mv({ attemptId: e }) {
       se("No se ha podido copiar el código");
     }
   }
-  function Bv() {
-    let { data: e, saveState: a, cloudUser: cu } = V(),
-      t = e.settings;
+  function Bv({ section: sec }) {
+    let { data: e, saveState: a } = V(),
+      t = e.settings,
+      section = ["perfil", "apariencia", "examen", "biblioteca", "frases", "datos"].includes(sec)
+        ? sec
+        : "perfil",
+      tabs = [
+        ["perfil", "Mi perfil"],
+        ["apariencia", "Apariencia"],
+        ["examen", "Examen"],
+        ["biblioteca", "Biblioteca"],
+        ["frases", "Frases"],
+        ["datos", "Datos"],
+      ];
     return (0, i.jsxs)("div", {
       className: "copy",
       children: [
@@ -23888,11 +24499,38 @@ function Mv({ attemptId: e }) {
             }),
             (0, i.jsx)("span", {
               className: "save-flag",
-              children: a === "saving" ? "Guardando\u2026" : a === "saved" ? "Guardado" : "",
+              children: a === "saving" ? "Guardando…" : a === "saved" ? "Guardado" : "",
             }),
           ],
         }),
-        (0, i.jsxs)("section", {
+        (0, i.jsx)("nav", {
+          className: "settings-nav",
+          "aria-label": "Secciones de ajustes",
+          children: tabs.map(([id, label]) =>
+            (0, i.jsx)(
+              "button",
+              {
+                type: "button",
+                "data-on": section === id,
+                "aria-current": section === id ? "true" : void 0,
+                onClick: () => x.go({ name: "settings", section: id }),
+                children: label,
+              },
+              id,
+            ),
+          ),
+        }),
+        section === "perfil" ? (0, i.jsx)(setPerfil, { t }) : null,
+        section === "apariencia" ? (0, i.jsx)(setLook, { t }) : null,
+        section === "examen" ? (0, i.jsx)(setExam, { t }) : null,
+        section === "biblioteca" ? (0, i.jsx)(setLib, { t }) : null,
+        section === "frases" ? (0, i.jsx)(setPhrases, { t }) : null,
+        section === "datos" ? (0, i.jsx)(setData, {}) : null,
+      ],
+    });
+  }
+  function setPerfil({ t }) {
+    return (0, i.jsxs)("section", {
           className: "settings-block",
           children: [
             (0, i.jsx)("h2", { children: "Perfil" }),
@@ -23955,8 +24593,10 @@ function Mv({ attemptId: e }) {
               ],
             }),
           ],
-        }),
-        (0, i.jsxs)("section", {
+    });
+  }
+  function setLook({ t }) {
+    return (0, i.jsx)("section", {
           className: "settings-block",
           children: [
             (0, i.jsx)("h2", { children: "Apariencia" }),
@@ -24103,8 +24743,10 @@ function Mv({ attemptId: e }) {
               ],
             }),
           ],
-        }),
-        (0, i.jsxs)("section", {
+    });
+  }
+  function setExam({ t }) {
+    return (0, i.jsxs)("section", {
           className: "settings-block",
           children: [
             (0, i.jsx)("h2", { children: "Examen oficial" }),
@@ -24140,8 +24782,10 @@ function Mv({ attemptId: e }) {
                 "El aro empieza el d\xEDa que abriste GStudy y llega al 100% el d\xEDa anterior a esta fecha. Puedes cambiarla cuando quieras. Ejemplo solo sirve 3 veces: 33%, 66% y 100%.",
             }),
           ],
-        }),
-        (0, i.jsxs)("section", {
+    });
+  }
+  function setLib({ t }) {
+    return (0, i.jsxs)("section", {
           className: "settings-block",
           children: [
             (0, i.jsx)("h2", { children: "Biblioteca" }),
@@ -24188,11 +24832,13 @@ function Mv({ attemptId: e }) {
               ),
             }),
           ],
-        }),
-        (0, i.jsxs)("section", {
+    });
+  }
+  function setPhrases({ t }) {
+    return (0, i.jsxs)("section", {
           className: "settings-block",
           children: [
-            (0, i.jsx)("h2", { children: "Motivaci\xF3n" }),
+            (0, i.jsx)("h2", { children: "Motivación" }),
             (0, i.jsxs)("label", {
               className: "checkline",
               children: [
@@ -24236,8 +24882,10 @@ function Mv({ attemptId: e }) {
               children: "Restaurar frases",
             }),
           ],
-        }),
-        (0, i.jsxs)("section", {
+    });
+  }
+  function setData() {
+    return (0, i.jsxs)("section", {
           className: "settings-block",
           children: [
             (0, i.jsx)("h2", { children: "Datos" }),
@@ -24297,8 +24945,6 @@ function Mv({ attemptId: e }) {
               ],
             }),
           ],
-        }),
-      ],
     });
   }
   function Ov() {
