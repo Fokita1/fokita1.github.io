@@ -1940,10 +1940,65 @@ html[data-theme="light"] .is-exam .opt.is-picked .opt-letter {
   color: var(--muted);
 }
 
-.item-row.is-pool,
-.item-row.is-bordered {
+.item-row.is-pool {
   background: color-mix(in oklab, var(--accent) 8%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent);
+}
+
+.item-row.is-bordered {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: transparent;
+  box-shadow:
+    0 0 12px color-mix(in oklab, var(--led, var(--accent)) 38%, transparent),
+    0 0 2px color-mix(in oklab, var(--led, var(--accent)) 55%, transparent);
+}
+
+.item-row.is-bordered::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: 220%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in oklab, var(--led, var(--accent)) 42%, transparent) 0deg,
+    var(--led, var(--accent)) 28deg,
+    color-mix(in oklab, white 78%, var(--led, var(--accent))) 52deg,
+    var(--led, var(--accent)) 86deg,
+    color-mix(in oklab, var(--led, var(--accent)) 50%, transparent) 150deg,
+    color-mix(in oklab, var(--led, var(--accent)) 16%, transparent) 230deg,
+    color-mix(in oklab, var(--led, var(--accent)) 72%, transparent) 310deg,
+    color-mix(in oklab, var(--led, var(--accent)) 42%, transparent) 360deg
+  );
+  animation: led-sweep 3.1s linear infinite;
+}
+
+.item-row.is-bordered::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 1.5px;
+  border-radius: calc(0.55rem - 1px);
+  pointer-events: none;
+  background: color-mix(in oklab, var(--led, var(--accent)) 9%, var(--bg));
+}
+
+.item-row.is-bordered > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sort-slot:nth-child(2n) .item-row.is-bordered::before {
+  animation-delay: -1s;
+}
+
+.sort-slot:nth-child(3n) .item-row.is-bordered::before {
+  animation-delay: -1.9s;
 }
 
 .item-row.is-pool .item-label {
@@ -2250,9 +2305,18 @@ html[data-theme="light"] .explain-note .explain-kicker {
   background: color-mix(in oklab, var(--fg) 4%, transparent);
 }
 
-.item-row.is-pool:hover,
-.item-row.is-bordered:hover {
+.item-row.is-pool:hover {
   background: color-mix(in oklab, var(--accent) 14%, transparent);
+}
+
+.item-row.is-bordered:hover::after {
+  background: color-mix(in oklab, var(--led, var(--accent)) 16%, var(--bg));
+}
+
+.item-row.is-bordered:hover {
+  box-shadow:
+    0 0 18px color-mix(in oklab, var(--led, var(--accent)) 55%, transparent),
+    0 0 2px color-mix(in oklab, var(--led, var(--accent)) 70%, transparent);
 }
 
 .toast {
@@ -2313,6 +2377,127 @@ html[data-motion="off"] .opt,
 html[data-motion="off"] .meter span {
   animation: none !important;
   transition: none !important;
+}
+
+.exam-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.35rem 0 1.35rem;
+}
+
+.exam-block .section-label {
+  margin: 0;
+  text-align: center;
+}
+
+.exam-ring {
+  position: relative;
+  width: 172px;
+  height: 172px;
+}
+
+.exam-ring svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.exam-track {
+  fill: none;
+  stroke: color-mix(in oklab, var(--fg) 14%, transparent);
+  stroke-width: 8;
+}
+
+.exam-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--accent) 62%, transparent));
+}
+
+.exam-plaque {
+  position: absolute;
+  inset: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  text-align: center;
+  border-radius: 999px;
+  padding: 0.45rem;
+  background:
+    radial-gradient(circle at 50% 28%, color-mix(in oklab, var(--accent) 24%, transparent), transparent 64%),
+    color-mix(in oklab, var(--fg) 5%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--accent) 38%, var(--line));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 16%, transparent),
+    0 8px 18px color-mix(in oklab, black 22%, transparent);
+  font-family: var(--font-serif);
+  font-size: 0.98rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.exam-sample-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.exam-date-row {
+  flex-wrap: nowrap;
+}
+
+.exam-date-row .field {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.exam-date-row .btn-line {
+  flex: none;
+}
+
+@keyframes led-sweep {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+html[data-motion="off"] .item-row.is-bordered::before,
+html[data-motion="off"] .item-row.is-bordered::after {
+  animation: none !important;
+}
+
+html[data-motion="off"] .item-row.is-bordered::before {
+  transform: none;
+  inset: 0;
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  background: var(--led, var(--accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-row.is-bordered::before {
+    animation: none !important;
+    transform: none;
+    inset: 0;
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+    background: var(--led, var(--accent));
+  }
 }
 
 html,body,#gstudy-root{min-height:100dvh}
@@ -15969,6 +16154,9 @@ Error generating stack: ` +
       { kicker: "ESFUERZO", text: "Los resultados llegan despu\xE9s de hacer el trabajo." },
       { kicker: "OBJETIVO", text: "Cada sesi\xF3n te acerca un poco m\xE1s a tu meta." },
     ];
+  function ledOf(e) {
+    return Jc(e) ? e : `var(--swatch-${yn.includes(e) ? e : "brass"})`;
+  }
   function Jc(e) {
     return typeof e == "string" && /^#[0-9a-fA-F]{6}$/.test(e);
   }
@@ -15998,6 +16186,11 @@ Error generating stack: ` +
       librarySort: "manual",
       motivationOn: !0,
       phrases: jC.map((e) => ({ ...e })),
+      tagGroups: [],
+      examDate: "",
+      firstOpenAt: 0,
+      examSamples: [],
+      examPreview: null,
     };
   }
   function F() {
@@ -17803,6 +17996,22 @@ REGLAS ABSOLUTAS
     }
     try {
       let e = await JL();
+      e = {
+        ...e,
+        settings: {
+          ...kl(),
+          ...e.settings,
+          id: "main",
+          tagGroups: Array.isArray(e.settings?.tagGroups) ? e.settings.tagGroups : [],
+          examSamples: Array.isArray(e.settings?.examSamples) ? e.settings.examSamples : [],
+          examDate: e.settings?.examDate || "",
+          examPreview: e.settings?.examPreview || null,
+        },
+      };
+      if (!e.settings.firstOpenAt) {
+        e = { ...e, settings: { ...e.settings, firstOpenAt: Date.now() } };
+        await WL(e.settings);
+      }
       (cloudDisarm(), (cloudUser = null), (cloudDemo = !1));
       G({
         ready: !0,
@@ -18185,14 +18394,66 @@ REGLAS ABSOLUTAS
         if (e.id) {
           let t = S.data.tags.find((u) => u.id === e.id);
           if (!t) return;
-          let l = { ...t, name: a, color: e.color, icon: e.icon };
+          let l = { ...t, name: a, color: e.color, icon: e.icon, groupId: e.groupId === void 0 ? t.groupId || null : e.groupId || null };
           (await Pf(l), $({ ...S.data, tags: S.data.tags.map((u) => (u.id === l.id ? l : u)) }));
         } else {
-          let t = { id: F(), name: a, color: e.color, icon: e.icon, createdAt: W(), order: W() };
+          let t = {
+            id: F(),
+            name: a,
+            color: e.color,
+            icon: e.icon,
+            createdAt: W(),
+            order: W(),
+            groupId: e.groupId || null,
+          };
           (await Pf(t), $({ ...S.data, tags: [...S.data.tags, t] }));
         }
         G({ modal: null });
       }
+    },
+    async setTagGroup(e, a) {
+      let t = S.data.tags.find((l) => l.id === e);
+      if (!t) return;
+      let l = { ...t, groupId: a || null };
+      (await Pf(l), $({ ...S.data, tags: S.data.tags.map((u) => (u.id === e ? l : u)) }));
+    },
+    async createTagGroup(e) {
+      let a = String(e || "").trim();
+      if (!a) return;
+      let t = { id: F(), name: a, createdAt: W(), order: W() };
+      (await x.updateSettings({ tagGroups: [...(S.data.settings.tagGroups || []), t] }),
+        G({ modal: null }),
+        se("Grupo creado"));
+    },
+    async renameTagGroup(e, a) {
+      let t = String(a || "").trim();
+      if (!t) return;
+      await x.updateSettings({
+        tagGroups: (S.data.settings.tagGroups || []).map((l) => (l.id === e ? { ...l, name: t } : l)),
+      });
+      G({ modal: null });
+    },
+    async deleteTagGroup(e) {
+      let a = S.data.tags.filter((t) => t.groupId === e);
+      for (let t of a) await Pf({ ...t, groupId: null });
+      a.length &&
+        $({
+          ...S.data,
+          tags: S.data.tags.map((t) => (t.groupId === e ? { ...t, groupId: null } : t)),
+        });
+      (await x.updateSettings({
+        tagGroups: (S.data.settings.tagGroups || []).filter((t) => t.id !== e),
+      }),
+        se("Grupo eliminado. Las etiquetas siguen fuera."));
+    },
+    async startExamSample(e) {
+      let a = S.data.settings.examSamples || [];
+      if (a.includes(e) || a.length >= 3 || ![33, 66, 100].includes(e)) return;
+      await x.updateSettings({
+        examSamples: [...a, e],
+        examPreview: { pct: e, started: Date.now() },
+      });
+      G({ modal: null, menu: null, route: { name: "home" } });
     },
     async deleteTag(e) {
       await Vf(e);
@@ -18250,6 +18511,7 @@ REGLAS ABSOLUTAS
         (o.tagIds = l),
         (o.icon = xn.includes(u.icon) ? u.icon : "file"),
         (o.color = Kc(u.color) ? u.color : "stone"),
+        (o.bordered = !!u.bordered),
         await pt(o),
         $({ ...S.data, tests: [...S.data.tests, o] }),
         (S = {
@@ -19341,7 +19603,7 @@ REGLAS ABSOLUTAS
           : e.type === "tags"
             ? (0, g.jsx)(gv, { kind: e.kind, id: e.id })
             : e.type === "tag-form"
-              ? (0, g.jsx)(hv, { tagId: e.tagId })
+              ? (0, g.jsx)(hv, { tagId: e.tagId, groupId: e.groupId })
               : e.type === "tag-merge"
                 ? (0, g.jsx)(Lv, { tagId: e.tagId })
                 : e.type === "import"
@@ -19364,7 +19626,11 @@ REGLAS ABSOLUTAS
                               ? (0, g.jsx)(Ts, { testId: e.testId })
                               : e.type === "pool"
                                 ? (0, g.jsx)(Nw, { tagId: e.tagId })
-                                : null;
+                                : e.type === "tag-group-form"
+                                  ? (0, g.jsx)(TgForm, { groupId: e.groupId })
+                                  : e.type === "exam-sample"
+                                    ? (0, g.jsx)(ExSample, {})
+                                    : null;
   }
   function fv({ title: e, initial: a, onClose: t, onSave: l }) {
     let [u, o] = (0, te.useState)(a.name),
@@ -19571,14 +19837,15 @@ REGLAS ABSOLUTAS
       [u, o] = (0, te.useState)(""),
       [n, s] = (0, te.useState)([]),
       [d, f] = (0, te.useState)("file"),
-      [m, h] = (0, te.useState)("stone");
+      [m, h] = (0, te.useState)("stone"),
+      [bd, setBd] = (0, te.useState)(!1);
     return (0, g.jsx)(Ue, {
       title: "Nuevo test",
       onClose: () => x.closeModal(),
       children: (0, g.jsxs)("form", {
         className: "stack",
         onSubmit: (c) => {
-          (c.preventDefault(), x.createTest(e, t, u, n, { icon: d, color: m }));
+          (c.preventDefault(), x.createTest(e, t, u, n, { icon: d, color: m, bordered: bd }));
         },
         children: [
           (0, g.jsxs)("div", {
@@ -19624,6 +19891,17 @@ REGLAS ABSOLUTAS
           }),
           (0, g.jsx)("p", { className: "tiny muted", children: "Color" }),
           (0, g.jsx)(Zp, { value: m, onChange: h }),
+          (0, g.jsxs)("label", {
+            className: "checkline",
+            children: [
+              (0, g.jsx)("input", {
+                type: "checkbox",
+                checked: bd,
+                onChange: (c) => setBd(c.target.checked),
+              }),
+              "A\xF1adir borde",
+            ],
+          }),
           (0, g.jsx)(yy, { tags: a.tags, selected: n, onChange: s }),
           (0, g.jsxs)("div", {
             className: "row-actions",
@@ -19715,19 +19993,21 @@ REGLAS ABSOLUTAS
       }),
     });
   }
-  function hv({ tagId: e }) {
+  function hv({ tagId: e, groupId: gid }) {
     let { data: a } = V(),
       t = a.tags.find((f) => f.id === e),
       [l, u] = (0, te.useState)(t?.name ?? ""),
       [o, n] = (0, te.useState)(t?.color ?? "brass"),
-      [s, d] = (0, te.useState)(t?.icon ?? "bookmark");
+      [s, d] = (0, te.useState)(t?.icon ?? "bookmark"),
+      [gg, gs] = (0, te.useState)(t?.groupId || gid || "");
     return (0, g.jsx)(Ue, {
       title: t ? "Editar etiqueta" : "Nueva etiqueta",
       onClose: () => x.closeModal(),
       children: (0, g.jsxs)("form", {
         className: "stack",
         onSubmit: (f) => {
-          (f.preventDefault(), x.saveTag({ id: e, name: l, color: o, icon: s }));
+          (f.preventDefault(),
+            x.saveTag({ id: e, name: l, color: o, icon: s, groupId: gg || null }));
         },
         children: [
           (0, g.jsxs)("div", {
@@ -19739,6 +20019,23 @@ REGLAS ABSOLUTAS
                 value: l,
                 onChange: (f) => u(f.target.value),
                 required: !0,
+              }),
+            ],
+          }),
+          (0, g.jsxs)("div", {
+            className: "field-label",
+            children: [
+              "Grupo",
+              (0, g.jsxs)("select", {
+                className: "field",
+                value: gg,
+                onChange: (f) => gs(f.target.value),
+                children: [
+                  (0, g.jsx)("option", { value: "", children: "Sin grupo" }),
+                  ...(a.settings.tagGroups || []).map((f) =>
+                    (0, g.jsx)("option", { value: f.id, children: f.name }, f.id),
+                  ),
+                ],
               }),
             ],
           }),
@@ -20452,6 +20749,8 @@ REGLAS ABSOLUTAS
         return (0, i.jsx)(wv, { attemptId: e.attemptId });
       case "tags":
         return (0, i.jsx)(kv, {});
+      case "tag-group":
+        return (0, i.jsx)(Gv, { id: e.groupId });
       case "tag":
         return (0, i.jsx)(Dv, { id: e.tagId });
       case "stats":
@@ -20463,6 +20762,112 @@ REGLAS ABSOLUTAS
       default:
         return null;
     }
+  }
+  function examSpan(e, a) {
+    let t = new Date(e.firstOpenAt || a);
+    t.setHours(0, 0, 0, 0);
+    let l = new Date(a);
+    l.setHours(0, 0, 0, 0);
+    if (!e.examDate || !/^\d{4}-\d{2}-\d{2}$/.test(e.examDate))
+      return { ratio: 0, daysLeft: null };
+    let u = e.examDate.split("-").map(Number),
+      o = new Date(u[0], (u[1] || 1) - 1, u[2] || 1);
+    o.setHours(0, 0, 0, 0);
+    let n = o.getTime() - 864e5,
+      s = Math.round((o.getTime() - l.getTime()) / 864e5),
+      d = n - t.getTime(),
+      f =
+        d <= 0
+          ? l.getTime() >= n
+            ? 1
+            : 0
+          : l.getTime() <= t.getTime()
+            ? 0
+            : l.getTime() >= n
+              ? 1
+              : (l.getTime() - t.getTime()) / d;
+    return { ratio: Math.min(1, Math.max(0, f)), daysLeft: s };
+  }
+  function examLabel(e) {
+    return e == null
+      ? "Sin fecha"
+      : e > 1
+        ? `Quedan ${e} d\xEDas`
+        : e === 1
+          ? "Queda 1 d\xEDa"
+          : e === 0
+            ? "Es hoy"
+            : "Ya pas\xF3";
+  }
+  function ExamRing() {
+    let { data: e } = V(),
+      a = e.settings,
+      t = examSpan(a, Date.now()),
+      l = a.examPreview,
+      u = !!(l && Date.now() - l.started < 1e4),
+      [o, n] = (0, te.useState)(u ? 0 : t.ratio);
+    (0, te.useEffect)(() => {
+      if (!u) {
+        l && x.updateSettings({ examPreview: null });
+        n(t.ratio);
+        return;
+      }
+      let s = 0,
+        d = () => {
+          let f = Math.min(1, (Date.now() - l.started) / 1e4),
+            m = f < 0.5 ? 2 * f * f : 1 - ((-2 * f + 2) ** 2) / 2;
+          n((l.pct / 100) * m);
+          f < 1 ? (s = window.requestAnimationFrame(d)) : x.updateSettings({ examPreview: null });
+        };
+      return (
+        (s = window.requestAnimationFrame(d)),
+        () => window.cancelAnimationFrame(s)
+      );
+    }, [u, l && l.started, t.ratio]);
+    let s = 2 * Math.PI * 54;
+    return (0, i.jsxs)("section", {
+      className: "exam-block",
+      children: [
+        (0, i.jsx)("p", {
+          className: "label-kicker section-label",
+          children: "Tiempo hasta el examen oficial",
+        }),
+        (0, i.jsxs)("div", {
+          className: "exam-ring",
+          children: [
+            (0, i.jsxs)("svg", {
+              viewBox: "0 0 140 140",
+              "aria-hidden": "true",
+              children: [
+                (0, i.jsx)("circle", { className: "exam-track", cx: "70", cy: "70", r: "54" }),
+                (0, i.jsx)("circle", {
+                  className: "exam-fill",
+                  cx: "70",
+                  cy: "70",
+                  r: "54",
+                  style: {
+                    strokeDasharray: s + " " + s,
+                    strokeDashoffset: s * (1 - o),
+                    transition: u ? "none" : "stroke-dashoffset 1.25s cubic-bezier(.2,.7,.2,1)",
+                  },
+                }),
+              ],
+            }),
+            (0, i.jsx)("div", {
+              className: "exam-plaque",
+              children: u
+                ? (0, i.jsxs)(i.Fragment, {
+                    children: [
+                      (0, i.jsx)("span", { className: "exam-sample-kicker", children: "Ejemplo" }),
+                      (0, i.jsx)("span", { children: `${Math.round(o * 100)}%` }),
+                    ],
+                  })
+                : examLabel(t.daysLeft),
+            }),
+          ],
+        }),
+      ],
+    });
   }
   function bv() {
     let { data: e } = V(),
@@ -20517,6 +20922,7 @@ REGLAS ABSOLUTAS
               ],
             })
           : null,
+        (0, i.jsx)(ExamRing, {}),
         (0, i.jsx)("p", { className: "label-kicker section-label", children: "Reciente" }),
         t.length === 0
           ? (0, i.jsx)("p", {
@@ -20875,14 +21281,6 @@ REGLAS ABSOLUTAS
                   children: "Nuevo test",
                 })
               : null,
-            o
-              ? (0, i.jsx)("button", {
-                  type: "button",
-                  className: "btn-line",
-                  onClick: () => x.toggleFolderBorder(o.id),
-                  children: o.bordered ? "Quitar borde" : "A\xF1adir borde",
-                })
-              : null,
           ],
         }),
         m
@@ -20937,6 +21335,7 @@ REGLAS ABSOLUTAS
     return t
       ? (0, i.jsxs)("div", {
           className: "item-row" + (t.bordered ? " is-bordered" : ""),
+          style: t.bordered ? { "--led": ledOf(t.color) } : void 0,
           children: [
             (0, i.jsxs)("button", {
               type: "button",
@@ -20974,6 +21373,7 @@ REGLAS ABSOLUTAS
     return t
       ? (0, i.jsxs)("div", {
           className: "item-row" + (t.pool ? " is-pool" : "") + (t.bordered ? " is-bordered" : ""),
+          style: t.bordered ? { "--led": ledOf(Kc(t.color) ? t.color : "stone") } : void 0,
           children: [
             (0, i.jsxs)("button", {
               type: "button",
@@ -21114,12 +21514,6 @@ REGLAS ABSOLUTAS
                   onClick: () => x.openBuilder(t.id),
                   children: "Editar",
                 }),
-            (0, i.jsx)("button", {
-              type: "button",
-              className: "btn-line",
-              onClick: () => x.toggleTestBorder(t.id),
-              children: t.bordered ? "Quitar borde" : "A\xF1adir borde",
-            }),
             o
               ? (0, i.jsx)("button", {
                   type: "button",
@@ -22631,8 +23025,93 @@ function Mv({ attemptId: e }) {
       ],
     });
   }
+  function TgForm({ groupId: e }) {
+    let { data: a } = V(),
+      t = (a.settings.tagGroups || []).find((l) => l.id === e),
+      [l, u] = (0, te.useState)(t?.name ?? "");
+    return (0, g.jsx)(Ue, {
+      title: t ? "Editar grupo" : "Crear grupo",
+      onClose: () => x.closeModal(),
+      children: (0, g.jsxs)("form", {
+        className: "stack",
+        onSubmit: (o) => {
+          (o.preventDefault(), t ? x.renameTagGroup(t.id, l) : x.createTagGroup(l));
+        },
+        children: [
+          (0, g.jsx)("p", {
+            className: "muted small",
+            children:
+              "Un grupo solo ordena etiquetas. No se puede asignar a una carpeta ni a un test.",
+          }),
+          (0, g.jsxs)("div", {
+            className: "field-label",
+            children: [
+              "Nombre",
+              (0, g.jsx)("input", {
+                className: "field",
+                value: l,
+                onChange: (o) => u(o.target.value),
+                required: !0,
+                maxLength: 60,
+              }),
+            ],
+          }),
+          (0, g.jsxs)("div", {
+            className: "row-actions",
+            children: [
+              (0, g.jsx)("button", {
+                type: "button",
+                className: "btn-ghost",
+                onClick: () => x.closeModal(),
+                children: "Cancelar",
+              }),
+              (0, g.jsx)("button", {
+                type: "submit",
+                className: "btn-primary",
+                disabled: !l.trim(),
+                children: "Guardar",
+              }),
+            ],
+          }),
+        ],
+      }),
+    });
+  }
+  function ExSample() {
+    let { data: e } = V(),
+      a = e.settings.examSamples || [];
+    return (0, g.jsx)(Ue, {
+      title: "Ejemplo del aro",
+      onClose: () => x.closeModal(),
+      children: (0, g.jsxs)("div", {
+        className: "stack",
+        children: [
+          (0, g.jsx)("p", {
+            className: "muted small",
+            children:
+              "Cada porcentaje se puede ver una vez, 10 segundos en Inicio. En total, tres pruebas.",
+          }),
+          [33, 66, 100].map((t) =>
+            (0, g.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "btn-line",
+                disabled: a.includes(t),
+                onClick: () => x.startExamSample(t),
+                children: a.includes(t) ? `${t}% ya visto` : `${t}%`,
+              },
+              t,
+            ),
+          ),
+        ],
+      }),
+    });
+  }
   function kv() {
-    let { data: e } = V();
+    let { data: e } = V(),
+      a = e.settings.tagGroups || [],
+      t = e.tags.filter((l) => !l.groupId || !a.some((u) => u.id === l.groupId));
     return (0, i.jsxs)("div", {
       className: "copy",
       children: [
@@ -22645,39 +23124,178 @@ function Mv({ attemptId: e }) {
                 (0, i.jsx)("h1", { className: "page-title", children: "Etiquetas" }),
               ],
             }),
-            (0, i.jsx)("button", {
-              type: "button",
-              className: "btn-primary",
-              onClick: () => x.openModal({ type: "tag-form" }),
-              children: "Nueva",
+            (0, i.jsxs)("div", {
+              className: "row-actions",
+              children: [
+                (0, i.jsx)("button", {
+                  type: "button",
+                  className: "btn-line",
+                  onClick: () => x.openModal({ type: "tag-group-form" }),
+                  children: "Crear Grupo",
+                }),
+                (0, i.jsx)("button", {
+                  type: "button",
+                  className: "btn-primary",
+                  onClick: () => x.openModal({ type: "tag-form" }),
+                  children: "Nueva",
+                }),
+              ],
             }),
           ],
         }),
-        e.tags.length === 0
+        (0, i.jsx)("p", {
+          className: "tiny faint",
+          children:
+            "Los grupos solo organizan etiquetas. Una etiqueta suelta sirve para todos los temas.",
+        }),
+        a.length
+          ? (0, i.jsx)("p", { className: "label-kicker section-label", children: "Grupos" })
+          : null,
+        a
+          .slice()
+          .sort((l, u) => (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0))
+          .map((l) => {
+            let u = e.tags.filter((o) => o.groupId === l.id).length;
+            return (0, i.jsxs)(
+              "div",
+              {
+                className: "item-row",
+                children: [
+                  (0, i.jsxs)("button", {
+                    type: "button",
+                    className: "item-open",
+                    onClick: () => x.go({ name: "tag-group", groupId: l.id }),
+                    children: [
+                      (0, i.jsx)(Na, { name: "library", swatch: "brass" }),
+                      (0, i.jsx)("span", { className: "item-label", children: l.name }),
+                      (0, i.jsx)("span", { className: "tiny faint right", children: u }),
+                    ],
+                  }),
+                  (0, i.jsx)("button", {
+                    type: "button",
+                    className: "btn-ghost",
+                    onClick: () => x.openModal({ type: "tag-group-form", groupId: l.id }),
+                    children: "Editar",
+                  }),
+                ],
+              },
+              l.id,
+            );
+          }),
+        t.length || a.length
+          ? (0, i.jsx)("p", { className: "label-kicker section-label", children: "Sin grupo" })
+          : null,
+        e.tags.length === 0 && a.length === 0
           ? (0, i.jsx)("p", {
               className: "empty",
-              children: "Crea una etiqueta para reunir carpetas y tests de distintas materias.",
+              children: "Crea una etiqueta o un grupo para ordenarlas.",
             })
-          : (0, i.jsxs)(i.Fragment, {
+          : null,
+        t.length
+          ? (0, i.jsxs)(i.Fragment, {
               children: [
                 (0, i.jsx)("p", {
                   className: "tiny faint",
                   children: "Mant\u00e9n pulsada una etiqueta para cambiar su orden.",
                 }),
                 (0, i.jsx)(Qs, {
-                  items: e.tags
+                  items: t
                     .slice()
                     .sort(
-                      (a, t) =>
-                        (a.order ?? a.createdAt ?? 0) - (t.order ?? t.createdAt ?? 0) ||
-                        a.name.localeCompare(t.name, "es"),
+                      (l, u) =>
+                        (l.order ?? l.createdAt ?? 0) - (u.order ?? u.createdAt ?? 0) ||
+                        l.name.localeCompare(u.name, "es"),
                     )
-                    .map((a) => ({ id: a.id, pinned: !1 })),
+                    .map((l) => ({ id: l.id, pinned: !1 })),
                   viewClass: "item-list",
                   kind: "tag",
                 }),
               ],
+            })
+          : null,
+      ],
+    });
+  }
+  function Gv({ id: e }) {
+    let { data: a } = V(),
+      t = (a.settings.tagGroups || []).find((n) => n.id === e),
+      [l, u] = (0, te.useState)("");
+    if (!t) return (0, i.jsx)("p", { className: "empty", children: "Grupo no encontrado." });
+    let o = a.tags.filter((n) => n.groupId === e),
+      n = a.tags.filter((s) => s.groupId !== e);
+    return (0, i.jsxs)("div", {
+      className: "copy",
+      children: [
+        (0, i.jsxs)("button", {
+          type: "button",
+          className: "btn-ghost",
+          onClick: () => x.go({ name: "tags" }),
+          children: [(0, i.jsx)(Ma, { className: "size-4", strokeWidth: 1.5 }), "Etiquetas"],
+        }),
+        (0, i.jsx)("header", {
+          className: "page-head",
+          children: (0, i.jsxs)("div", {
+            children: [
+              (0, i.jsx)("p", { className: "label-kicker", children: "Grupo" }),
+              (0, i.jsx)("h1", { className: "page-title", children: t.name }),
+            ],
+          }),
+        }),
+        (0, i.jsxs)("div", {
+          className: "row-actions",
+          children: [
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "btn-primary",
+              onClick: () => x.openModal({ type: "tag-form", groupId: e }),
+              children: "Nueva etiqueta",
             }),
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "btn-line",
+              onClick: () => x.openModal({ type: "tag-group-form", groupId: e }),
+              children: "Renombrar",
+            }),
+            (0, i.jsx)("button", {
+              type: "button",
+              className: "btn-danger",
+              onClick: async () => {
+                (await x.askConfirm({
+                  title: "Eliminar grupo",
+                  body: "Las etiquetas no se borran: se quedan sueltas.",
+                  confirmLabel: "Eliminar grupo",
+                  danger: !0,
+                })) && (await x.deleteTagGroup(e), x.go({ name: "tags" }));
+              },
+              children: "Eliminar grupo",
+            }),
+          ],
+        }),
+        o.length === 0
+          ? (0, i.jsx)("p", { className: "empty", children: "Este grupo est\u00e1 vac\u00edo." })
+          : o.map((s) => (0, i.jsx)(tagRow, { id: s.id }, s.id)),
+        n.length
+          ? (0, i.jsxs)("div", {
+              className: "row-actions group-gap",
+              children: [
+                (0, i.jsxs)("select", {
+                  className: "field grow",
+                  value: l || n[0].id,
+                  onChange: (s) => u(s.target.value),
+                  "aria-label": "Etiqueta para meter en el grupo",
+                  children: n.map((s) =>
+                    (0, i.jsx)("option", { value: s.id, children: s.name }, s.id),
+                  ),
+                }),
+                (0, i.jsx)("button", {
+                  type: "button",
+                  className: "btn-line",
+                  onClick: () => x.setTagGroup(l || n[0].id, e),
+                  children: "Meter",
+                }),
+              ],
+            })
+          : null,
       ],
     });
   }
@@ -23483,6 +24101,43 @@ function Mv({ attemptId: e }) {
                 }),
                 "Animaciones",
               ],
+            }),
+          ],
+        }),
+        (0, i.jsxs)("section", {
+          className: "settings-block",
+          children: [
+            (0, i.jsx)("h2", { children: "Examen oficial" }),
+            (0, i.jsxs)("div", {
+              className: "field-label",
+              children: [
+                "Fecha del examen",
+                (0, i.jsxs)("div", {
+                  className: "row-actions exam-date-row",
+                  children: [
+                    (0, i.jsx)("input", {
+                      className: "field",
+                      type: "date",
+                      value: t.examDate || "",
+                      onChange: (l) => {
+                        x.updateSettings({ examDate: l.target.value });
+                      },
+                    }),
+                    (0, i.jsx)("button", {
+                      type: "button",
+                      className: "btn-line",
+                      disabled: (t.examSamples || []).length >= 3,
+                      onClick: () => x.openModal({ type: "exam-sample" }),
+                      children: "Ejemplo",
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            (0, i.jsx)("p", {
+              className: "tiny faint",
+              children:
+                "El aro empieza el d\xEDa que abriste GStudy y llega al 100% el d\xEDa anterior a esta fecha. Puedes cambiarla cuando quieras. Ejemplo solo sirve 3 veces: 33%, 66% y 100%.",
             }),
           ],
         }),
