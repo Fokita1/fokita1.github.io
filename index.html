@@ -896,13 +896,15 @@ input[type="radio"] {
 }
 
 .exam-islands {
-  position: relative;
+  position: fixed;
+  top: calc(3.7rem + 2.15rem);
+  right: 0.95rem;
+  z-index: 26;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.35rem;
-  margin: 0 0 0.85rem;
-  z-index: 2;
+  margin: 0;
 }
 
 .island {
@@ -1519,7 +1521,7 @@ input[type="radio"] {
     overflow: auto;
     max-width: none;
     margin: 0;
-    padding: 0.85rem 1rem 6.2rem;
+    padding: 8.2rem 1rem 6.2rem;
     overscroll-behavior: contain;
   }
   .exam-sheet {
@@ -1535,7 +1537,7 @@ input[type="radio"] {
   }
   .is-exam,
   .is-review {
-    padding-top: 3.4rem;
+    padding-top: 11.6rem;
   }
   .exam-split {
     display: flex;
@@ -1548,9 +1550,8 @@ input[type="radio"] {
     padding: 0;
   }
   .exam-islands {
-    order: 1;
-    align-self: flex-end;
-    margin: 0.4rem 0.75rem 0.15rem auto;
+    right: 0.8rem;
+    margin: 0;
   }
   .warn-line {
     order: 2;
@@ -2725,9 +2726,6 @@ html[data-motion="off"] .item-row.is-bordered::before {
     background: var(--led, var(--accent));
   }
 }
-
-html,body,#gstudy-root{min-height:100dvh}
-body{margin:0;background:#101210}
 </style>
 </head>
 <body>
@@ -25626,7 +25624,6 @@ function Mv({ attemptId: e }) {
     }, 25);
   }
 })();
-
 
 </script>
 </body>
