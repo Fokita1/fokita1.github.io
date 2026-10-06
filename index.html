@@ -16793,6 +16793,7 @@ Error generating stack: ` +
             : m.has("CORRECTA")
               ? !1
               : s;
+      s && (C = !0);
       r && !r.includes("NORMAL") && !C && c.push("Tipo no reconocido");
       let v = m.get("ENUNCIADO") ?? "";
       v.trim() || c.push("Falta el enunciado");
@@ -16801,10 +16802,11 @@ Error generating stack: ` +
       y.forEach((H, B) => {
         H.trim() || c.push(`Falta la opci\xF3n ${w[B]}`);
       });
-      let p = C ? m.get("CORRECTAS") : m.get("CORRECTA");
-      !C && (p == null || !p.trim()) && c.push("Falta CORRECTA");
-      let L = p == null ? (C ? [] : null) : ZC(p);
-      (L == null && c.push(C ? "CORRECTAS no v\xE1lidas" : "CORRECTA no v\xE1lida"),
+      let pRaw = C ? (m.get("CORRECTAS") ?? m.get("CORRECTA")) : m.get("CORRECTA"),
+        p = pRaw == null ? "" : String(pRaw).trim();
+      p || c.push(C ? "Falta CORRECTAS" : "Falta CORRECTA");
+      let L = p ? ZC(p) : null;
+      (p && L == null && c.push(C ? "CORRECTAS no v\xE1lidas" : "CORRECTA no v\xE1lida"),
         !C && L && L.length !== 1 && c.push("Una pregunta normal admite una sola correcta"));
       let b = y.map((H) => ({ id: F(), text: H.trim() })),
         A = L?.map((H) => b[H.charCodeAt(0) - 65]?.id).filter((H) => !!H) ?? [],
@@ -16992,6 +16994,250 @@ REGLAS ABSOLUTAS
 * La EXPLICACION siempre debe contener ARTÍCULO y ARTÍCULO siempre debe ocupar el primer lugar.
 * CUIDADO y NOTA son opcionales después de ARTÍCULO, normalmente solo uno; si aparecen ambos, CUIDADO va siempre antes que NOTA.
 `;
+  }
+
+  function promptBlock(e, a) {
+    return `FORMATO OBLIGATORIO
+Genera EXACTAMENTE ${e} preguntas. No añadas ninguna pregunta adicional.
+No escribas introducciones, títulos, conclusiones ni texto fuera de los bloques, salvo el número de pregunta.
+
+X
+
+[GQUESTION]
+${a}
+[/GQUESTION]
+
+NO cambies estas etiquetas:
+ENUNCIADO:
+A:
+B:
+C:
+D:
+${a.includes("CORRECTAS:") ? "CORRECTAS:" : "CORRECTA:"}
+EXPLICACION:
+
+REGLAS ABSOLUTAS
+* Exactamente ${e} preguntas.
+* Sin markdown y sin texto fuera de los bloques.`;
+  }
+
+  function promptIngles(e) {
+    return `NÚMERO DE PREGUNTAS: ${e}
+
+MATERIA
+Inglés. Oposición a la Guardia Civil, Escala de Cabos y Guardias. No es Teoría, ni Ortografía, ni Gramática, ni Psicotécnicos.
+
+QUÉ SE EVALÚA
+Comprensión, vocabulario en contexto, gramática inglesa y uso real de la lengua: tiempos verbales, preposiciones, phrasal verbs, condicionales, pasiva, reported speech, modales, conectores, sinónimos en contexto y un texto corto con una pregunta. Estilo de examen oficial, no de ejercicio escolar.
+
+CÓMO SE CORRIGE EN LA APP
+Cada pregunta tiene UNA sola respuesta correcta. Las preguntas se mezclan de un intento a otro y las opciones también. Por eso, en el archivo, la correcta es SIEMPRE la A. La app la moverá de sitio al realizar el test.
+
+DIFICULTAD
+MUY ALTA. Las cuatro opciones deben ser plausibles y parecerse. Nada absurdo ni traducido al pie de la letra de forma ridícula.
+
+EXPLICACIÓN
+No uses artículo de ley. La EXPLICACION lleva, en este orden, el motivo lingüístico y después CUIDADO y/o NOTA:
+[REGLA] por qué A es la correcta y por qué no las otras [/REGLA]
+[CUIDADO] confusión típica [/CUIDADO]
+[NOTA] truco breve [/NOTA]
+CUIDADO y NOTA son opcionales; si aparecen ambos, CUIDADO va antes.
+
+${promptBlock(
+      e,
+      `ENUNCIADO: …
+A: …
+B: …
+C: …
+D: …
+CORRECTA: A
+EXPLICACION:
+[REGLA]
+…
+[/REGLA]
+[CUIDADO]
+…
+[/CUIDADO]
+[NOTA]
+…
+[/NOTA]`,
+    )}
+* A siempre correcta.
+* Una sola correcta.
+* Enunciado en inglés, salvo que la pregunta pida traducir o señalar el error.
+* Distractores próximos y reales.`;
+  }
+
+  function promptPsico(e) {
+    return `NÚMERO DE PREGUNTAS: ${e}
+
+MATERIA
+Psicotécnicos. Oposición a la Guardia Civil, Escala de Cabos y Guardias. No es Teoría, ni Inglés, ni Ortografía, ni Gramática.
+
+QUÉ SE EVALÚA
+Razonamiento que se pueda resolver leyendo, sin dibujo: series numéricas, series de letras, analogías verbales, odd-one-out, atención sobre un texto, problemas cortos de lógica y reglas que hay que aplicar. No pidas mirar una figura que no está escrita.
+
+CÓMO SE CORRIGE EN LA APP
+Cada pregunta tiene UNA sola respuesta correcta. Las preguntas se mezclan de un intento a otro y las opciones también. Por eso, en el archivo, la correcta es SIEMPRE la A. La app la moverá de sitio al realizar el test.
+
+DIFICULTAD
+MUY ALTA, propia del examen. Las otras tres opciones deben ser errores plausibles del mismo patrón, no números al azar.
+
+EXPLICACIÓN
+La EXPLICACION enseña el patrón, paso a paso, y puede llevar CUIDADO y NOTA:
+[REGLA] resolución completa [/REGLA]
+[CUIDADO] el fallo en el que se suele caer [/CUIDADO]
+[NOTA] cómo reconocerlo rápido [/NOTA]
+
+${promptBlock(
+      e,
+      `ENUNCIADO: …
+A: …
+B: …
+C: …
+D: …
+CORRECTA: A
+EXPLICACION:
+[REGLA]
+…
+[/REGLA]
+[CUIDADO]
+…
+[/CUIDADO]
+[NOTA]
+…
+[/NOTA]`,
+    )}
+* A siempre correcta.
+* Una sola correcta.
+* El enunciado tiene todos los datos. No depende de una imagen.`;
+  }
+
+  function promptOrto(e) {
+    return `NÚMERO DE PREGUNTAS: ${e}
+
+MATERIA
+Ortografía. Oposición a la Guardia Civil, Escala de Cabos y Guardias. No es Teoría, ni Inglés, ni Gramática, ni Psicotécnicos.
+
+CÓMO ES EL EXAMEN
+El opositor marca las palabras escritas MAL. En este archivo, esas palabras mal escritas son las CORRECTAS del test: CORRECTAS son las letras que hay que señalar. Puede haber 0, 1, 2, 3 o las 4 mal. Si las cuatro están bien escritas, CORRECTAS: NINGUNA.
+
+LAS OPCIONES NO SE MEZCLAN
+Las preguntas sí cambian de orden de un intento a otro. Las opciones NO. Si una palabra incorrecta es la A, sigue siendo la A siempre. Si son la B y la D, siguen siendo la B y la D. No diseñes la pregunta para que la respuesta sea siempre la A.
+
+FORMATO DE CADA PREGUNTA
+Una sola oración. Dentro van exactamente cuatro palabras dudosas, cada una seguida de su etiqueta, en este orden: palabra (X1) … palabra (X2) … palabra (X3) … palabra (X4).
+Las opciones son SIEMPRE, y literales:
+A: X1
+B: X2
+C: X3
+D: X4
+No pongas la palabra en la opción. La palabra está en el enunciado, junto a su (X1), (X2), (X3) o (X4).
+
+EJEMPLO DE FORMA, no lo copies tal cual:
+El haya (X1) se quedó en alli (X2) porque le (X3) comunicó ayer (X4) que no lo hiciera.
+A: X1
+B: X2
+C: X3
+D: X4
+CORRECTAS: A,B
+Ahí «haya» y «alli» están mal; «le» y «ayer» están bien.
+
+VARÍA EL NÚMERO
+En el lote tiene que haber preguntas con ninguna mal, con una, con dos, con tres y, si el número de preguntas lo permite, con las cuatro. No repitas siempre las mismas letras.
+
+ERRORES
+Acentos, tildes diacríticas, h, b/v, g/j, ll/y, s/x, mayúsculas, juntas o separadas, por qué / porque / porqué. Errores reales y plausibles. Si una palabra está bien, que esté impecable.
+
+EXPLICACIÓN
+Mantén CUIDADO y NOTA. Di de cada X si está bien o cómo se escribe de verdad.
+[CUIDADO]
+X1 «haya» es incorrecto: en este contexto es «allá» o la forma que corresponda. …
+[/CUIDADO]
+[NOTA]
+Truco breve para no confundirlas.
+[/NOTA]
+
+${promptBlock(
+      e,
+      `ENUNCIADO: …
+A: X1
+B: X2
+C: X3
+D: X4
+CORRECTAS: A,C
+EXPLICACION:
+[CUIDADO]
+…
+[/CUIDADO]
+[NOTA]
+…
+[/NOTA]`,
+    )}
+* A, B, C y D son exactamente X1, X2, X3 y X4, en ese orden, siempre.
+* CORRECTAS admite NINGUNA o cualquier combinación de A, B, C y D.
+* No pongas CORRECTA: A por costumbre.`;
+  }
+
+  function promptGram(e) {
+    return `NÚMERO DE PREGUNTAS: ${e}
+
+MATERIA
+Gramática. Oposición a la Guardia Civil, Escala de Cabos y Guardias. No es Teoría, ni Inglés, ni Ortografía, ni Psicotécnicos.
+
+CÓMO ES EL EXAMEN
+El opositor marca las oraciones INCORRECTAS. En este archivo, esas oraciones incorrectas son las CORRECTAS del test. Puede haber 0, 1, 2, 3 o las 4 mal. Si las cuatro están bien, CORRECTAS: NINGUNA.
+
+LAS OPCIONES NO SE MEZCLAN
+Las preguntas sí cambian de orden de un intento a otro. Las opciones NO. Si una oración incorrecta es la A, sigue siendo la A. Si son la B y la D, siguen siendo la B y la D. No hagas que la respuesta sea siempre la A.
+
+ENUNCIADO
+El enunciado es SIEMPRE, y exacto, este:
+Seleccione las opciones INCORRECTAS
+No añadas nada más al enunciado. Las cuatro oraciones van en A, B, C y D.
+
+EJEMPLO DE FORMA:
+ENUNCIADO: Seleccione las opciones INCORRECTAS
+A: Habían muchas personas en la plaza.
+B: Ha habido muchas personas en la plaza.
+C: Se les dio a los alumnos el resultado.
+D: La dije que viniera.
+CORRECTAS: A,D
+
+VARÍA
+En el lote tiene que haber preguntas con ninguna incorrecta, con una, con dos, con tres y, si cabe, con las cuatro. Cambia qué letras son las malas.
+
+ERRORES
+Concordancia, dequeísmo, leísmo, laísmo, loísmo, gerundio de posterioridad, queísmo, tiempos, pronombres, «haber» impersonal, relativo. Cada oración incorrecta tiene un fallo claro. Cada correcta es intachable.
+
+EXPLICACIÓN
+Mantén CUIDADO y NOTA. Explica cada oración: por qué está bien o cómo se dice bien.
+[CUIDADO]
+A es incorrecta porque «haber» impersonal es singular: «había». …
+[/CUIDADO]
+[NOTA]
+Truco breve.
+[/NOTA]
+
+${promptBlock(
+      e,
+      `ENUNCIADO: Seleccione las opciones INCORRECTAS
+A: …
+B: …
+C: …
+D: …
+CORRECTAS: B,D
+EXPLICACION:
+[CUIDADO]
+…
+[/CUIDADO]
+[NOTA]
+…
+[/NOTA]`,
+    )}
+* El enunciado no cambia nunca.
+* CORRECTAS admite NINGUNA o cualquier combinación de A, B, C y D.
+* El orden de las cuatro oraciones es el del examen. No lo prepares para reordenarlo.`;
   }
 
   function explainParts(e) {
@@ -18884,13 +19130,32 @@ REGLAS ABSOLUTAS
         Da());
     },
     removeQuestion(e) {
-      if (!S.editor) return;
+      if (!S.editor || S.editor.test.questions.length <= 1) return;
       let a = S.editor.test.questions.filter((u, o) => o !== e),
-        t = a.length ? a : [Dl()],
-        l = Math.max(0, Math.min(S.editor.index, t.length - 1));
+        l = Math.max(0, Math.min(S.editor.index, a.length - 1));
       ((S = {
         ...S,
-        editor: { test: { ...S.editor.test, questions: t }, index: l },
+        editor: { test: { ...S.editor.test, questions: a }, index: l },
+        saveState: "saving",
+      }),
+        Da());
+    },
+    clearQuestion(e) {
+      if (!S.editor) return;
+      let a = S.editor.test.questions.map((t, l) => {
+        if (l !== e) return t;
+        let u = t.answers.length === 4 ? t.answers : [0, 1, 2, 3].map(() => ({ id: F(), text: "" }));
+        return {
+          ...t,
+          statement: "",
+          answers: u.map((o) => ({ ...o, text: "" })),
+          correctAnswerIds: [],
+          explanation: "",
+        };
+      });
+      ((S = {
+        ...S,
+        editor: { test: { ...S.editor.test, questions: a }, index: S.editor.index },
         saveState: "saving",
       }),
         Da());
@@ -19026,7 +19291,10 @@ REGLAS ABSOLUTAS
       let n = o,
         s = qf(n.map((m) => m.id)),
         d = {};
-      for (let m of n) d[m.id] = qf(m.answers.map((h) => h.id));
+      for (let m of n) {
+        let h = m.answers.map((c) => c.id);
+        d[m.id] = wa(m.sourceSubjectId || l.subjectId) ? h : qf(h);
+      }
       let f = {
         id: F(),
         testId: l.id,
@@ -20556,28 +20824,41 @@ REGLAS ABSOLUTAS
       }),
     });
   }
-  function xv() {
-    async function e(a) {
-      let t = promptGC(a),
-        l = !1;
+  function xv({ testId: e }) {
+    let { data: a, editor: t } = V(),
+      l = t?.test.id === e ? t.test : a.tests.find((r) => r.id === e),
+      u = l?.subjectId || "teoria",
+      o = al(u);
+    async function n(s) {
+      let d =
+          u === "ingles"
+            ? promptIngles(s)
+            : u === "psicotecnicos"
+              ? promptPsico(s)
+              : u === "ortografia"
+                ? promptOrto(s)
+                : u === "gramatica"
+                  ? promptGram(s)
+                  : promptGC(s),
+        f = !1;
       try {
-        (await navigator.clipboard.writeText(t), (l = !0));
+        (await navigator.clipboard.writeText(d), (f = !0));
       } catch {
         try {
-          let u = document.createElement("textarea");
-          ((u.value = t),
-            (u.setAttribute("readonly", "")),
-            (u.style.position = "fixed"),
-            (u.style.left = "-9999px"),
-            document.body.appendChild(u),
-            u.select(),
-            (l = document.execCommand("copy")),
-            u.remove());
+          let m = document.createElement("textarea");
+          ((m.value = d),
+            (m.setAttribute("readonly", "")),
+            (m.style.position = "fixed"),
+            (m.style.left = "-9999px"),
+            document.body.appendChild(m),
+            m.select(),
+            (f = document.execCommand("copy")),
+            m.remove());
         } catch {
-          l = !1;
+          f = !1;
         }
       }
-      l
+      f
         ? (x.toast("Prompt Copiado con Éxito"), x.closeModal())
         : x.toast("No se ha podido copiar el prompt");
     }
@@ -20587,9 +20868,9 @@ REGLAS ABSOLUTAS
       children: (0, g.jsxs)("div", {
         className: "stack",
         children: [
-          (0, g.jsx)("p", {
+          (0, g.jsxs)("p", {
             className: "muted small",
-            children: "La dificultad es muy alta. Elige cuántas preguntas quieres y se copiará el prompt.",
+            children: ["Prompt de ", o, ". La dificultad es muy alta. Elige cuántas preguntas quieres y se copiará."],
           }),
           (0, g.jsx)("div", {
             className: "stack",
@@ -20599,7 +20880,7 @@ REGLAS ABSOLUTAS
                 {
                   type: "button",
                   className: "btn-line",
-                  onClick: () => e(a),
+              onClick: () => n(a),
                   children: `${a} preguntas`,
                 },
                 a,
@@ -22182,7 +22463,7 @@ REGLAS ABSOLUTAS
                 " listas \xB7 ",
                 El(Sn(Math.max(m, f))),
                 " \xB7 ",
-                d ? "varias correctas posibles" : "una correcta",
+                d ? "de 0 a 4 a señalar · A B C D no se mezclan" : "una correcta",
               ],
             }),
             (0, i.jsxs)("div", {
@@ -22208,7 +22489,9 @@ REGLAS ABSOLUTAS
                       className: "correct-toggle",
                       "data-on": r,
                       "aria-pressed": r,
-                      "aria-label": `Marcar respuesta ${c + 1} como correcta`,
+                      "aria-label": d
+                        ? `Marcar ${String.fromCharCode(65 + c)} como una de las que hay que señalar`
+                        : `Marcar respuesta ${c + 1} como correcta`,
                       onClick: () => {
                         let C = d
                           ? r
@@ -22251,6 +22534,45 @@ REGLAS ABSOLUTAS
             (0, i.jsxs)("div", {
               className: "row-actions",
               children: [
+                (0, i.jsx)("button", {
+                  type: "button",
+                  className: "btn-line",
+                  onClick: async () => {
+                    if (xd(s)) {
+                      x.toast("La pregunta ya está vacía");
+                      return;
+                    }
+                    (await x.askConfirm({
+                      title: "Vaciar pregunta",
+                      body: "Se borrarán el enunciado, las cuatro opciones, las marcadas y la explicación. La pregunta sigue en el test, vacía.",
+                      confirmLabel: "Vaciar",
+                      danger: !0,
+                    })) && x.clearQuestion(n);
+                  },
+                  children: "Vaciar pregunta",
+                }),
+                (0, i.jsx)("button", {
+                  type: "button",
+                  className: "btn-ghost",
+                  disabled: f <= 1,
+                  onClick: async () => {
+                    if (f <= 1) return;
+                    (zL(s) &&
+                      !(await x.askConfirm({
+                        title: "Eliminar pregunta",
+                        body: "Esta pregunta se borrará del test. No se puede dejar el test sin preguntas.",
+                        confirmLabel: "Eliminar",
+                        danger: !0,
+                      }))) ||
+                      x.removeQuestion(n);
+                  },
+                  children: "Eliminar pregunta",
+                }),
+              ],
+            }),
+            (0, i.jsxs)("div", {
+              className: "row-actions",
+              children: [
                 l.tags.map((h) => {
                   let c = s.tagIds.includes(h.id);
                   return (0, i.jsx)(
@@ -22279,25 +22601,6 @@ REGLAS ABSOLUTAS
                   className: "btn-ghost",
                   onClick: () => x.openModal({ type: "prompt", testId: o.id }),
                   children: "Copiar prompt para IA",
-                }),
-                (0, i.jsx)("button", {
-                  type: "button",
-                  className: "btn-ghost",
-                  onClick: async () => {
-                    if (o.questions.length <= 1) {
-                      x.toast("El test necesita al menos una pregunta");
-                      return;
-                    }
-                    (zL(s) &&
-                      !(await x.askConfirm({
-                        title: "Eliminar pregunta",
-                        body: "Esta pregunta tiene contenido y se borrar\xE1 del test.",
-                        confirmLabel: "Eliminar",
-                        danger: !0,
-                      }))) ||
-                      x.removeQuestion(n);
-                  },
-                  children: "Eliminar esta pregunta",
                 }),
               ],
             }),
