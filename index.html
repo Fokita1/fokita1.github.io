@@ -8,7 +8,6 @@
 <title>GStudy</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%20role%3D%22img%22%20aria-label%3D%22GStudy%22%3E%0A%20%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23141210%22%2F%3E%0A%20%20%3Cpath%20fill%3D%22%23ebe6dc%22%20d%3D%22M6.5%2010.2c2.4-1.6%205-.9%207.2.6v12.4c-2.2-1.3-4.8-1.8-7.2-.4V10.2z%22%2F%3E%0A%20%20%3Cpath%20fill%3D%22%23d4b483%22%20d%3D%22M18.3%2010.8c2.2-1.5%204.8-2.2%207.2-.6v12.6c-2.4-1.4-5-.9-7.2.4V10.8z%22%2F%3E%0A%20%20%3Crect%20x%3D%2215.2%22%20y%3D%229.2%22%20width%3D%221.6%22%20height%3D%2215.2%22%20rx%3D%220.4%22%20fill%3D%22%23d4b483%22%2F%3E%0A%3C%2Fsvg%3E">
 <style>
-
 @font-face {
   font-family: "Outfit Variable";
   font-style: normal;
@@ -1470,6 +1469,11 @@ input[type="radio"] {
   }
   .app-bare .main.bare {
     height: 100dvh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-bare .main.bare:has(.is-exam),
+  .app-bare .main.bare:has(.is-review) {
     overflow: hidden;
   }
   .bottom-nav {
@@ -1731,17 +1735,16 @@ html[data-motion="off"] .toast {
 
 body.is-reordering,
 html:has(body.is-reordering) {
-  overflow: hidden !important;
   overscroll-behavior: none;
   touch-action: none;
   user-select: none;
   cursor: grabbing;
+  overflow-anchor: none;
 }
 
 body.is-reordering .main {
-  overflow: hidden !important;
   overscroll-behavior: none;
-  touch-action: none;
+  overflow-anchor: none;
 }
 
 .item-open,
@@ -2099,6 +2102,22 @@ html[data-theme="light"] .is-exam .opt.is-picked {
 }
 
 html[data-theme="light"] .is-exam .opt.is-picked .opt-letter {
+  color: #1d4e89;
+}
+
+.is-review .opt.is-picked {
+  border-color: #8ec5ff;
+  background: color-mix(in oklab, #8ec5ff 30%, var(--surface));
+  box-shadow: inset 4px 0 0 #7eb6ff;
+  color: var(--fg);
+}
+
+.is-review .opt.is-picked .opt-letter {
+  color: #d7ebff;
+  font-weight: 680;
+}
+
+html[data-theme="light"] .is-review .opt.is-picked .opt-letter {
   color: #1d4e89;
 }
 
@@ -16632,7 +16651,7 @@ Error generating stack: ` +
         return "Escala oficial 0\u201330. Referencia de examen: 80 preguntas. Apto desde 12. El resultado se normaliza al n\xFAmero real de preguntas.";
       case "ortografia":
       case "gramatica":
-        return "Sin nota num\xE9rica oficial. La aptitud de referencia cuenta errores del intento: 5 o menos, apto; 6 o m\xE1s, no apto.";
+        return "Cada opción cuenta como una respuesta. Acierto: marcas una que está mal, o dejas sin marcar una que está bien. Fallo: marcas una que está bien, o dejas sin marcar una que está mal. Apto con el 25% de fallos o menos sobre el total de opciones. En el examen oficial (5 preguntas, 20 opciones) son 5 fallos o menos.";
     }
   }
   function QC(e) {
@@ -16678,16 +16697,18 @@ Error generating stack: ` +
       }
     };
   function _L(e) {
-    let a = e.incorrect + e.blank;
+    let a = e.incorrect | 0,
+      t = e.options | 0;
     return {
       correct: e.correct,
-      incorrect: e.incorrect,
-      blank: e.blank,
+      incorrect: a,
+      blank: 0,
       errors: a,
+      options: t,
       score: null,
       scaleMax: null,
-      apto: a <= 5,
-      label: `${a} ${a === 1 ? "error" : "errores"}`,
+      apto: a * 4 <= t,
+      label: `${a} ${a === 1 ? "fallo" : "fallos"}`,
     };
   }
   var YC = {
@@ -16697,7 +16718,16 @@ Error generating stack: ` +
     ortografia: new Bf(),
     gramatica: new Of(),
   };
-  function Vu(e, a) {
+  function Xo(e, a) {
+    let t = new Set((a ?? []).filter((n) => n && n !== ze)),
+      l = new Set(e.correctAnswerIds),
+      u = 0,
+      o = 0;
+    for (let n of e.answers) t.has(n.id) === l.has(n.id) ? u++ : o++;
+    return { hits: u, misses: o, options: e.answers.length };
+  }
+  function Vu(e, a, multi) {
+    if (multi) return Xo(e, a).misses === 0 ? "correct" : "incorrect";
     let t = a ?? [];
     if (t.length === 0) return "blank";
     let l = t.includes(ze),
@@ -16708,7 +16738,28 @@ Error generating stack: ` +
       n = [...e.correctAnswerIds].sort().join("|");
     return o === n ? "correct" : "incorrect";
   }
-  function FL(e) {
+  function FL(e, revealedOnly = false) {
+    if (wa(e.subjectId)) {
+      let o = 0,
+        n = 0,
+        s = 0,
+        revealed = new Set(e.revealed ?? []);
+      for (let d of e.questionOrder) {
+        if (revealedOnly && !revealed.has(d)) continue;
+        let f = e.questions.find((m) => m.id === d);
+        if (!f) continue;
+        let m = Xo(f, e.answersGiven[d]);
+        ((o += m.hits), (n += m.misses), (s += m.options));
+      }
+      let total = revealedOnly ? revealed.size : e.questionOrder.length;
+      return YC[e.subjectId].score({
+        correct: o,
+        incorrect: n,
+        blank: 0,
+        total,
+        options: s,
+      });
+    }
     let a = 0,
       t = 0,
       l = 0;
@@ -17284,6 +17335,11 @@ EXPLICACION:
     let a = new Date(e);
     return `${a.getFullYear()}-${a.getMonth()}-${a.getDate()}`;
   }
+  function attemptResult(e) {
+    return e?.finishedAt && wa(e.subjectId) && e.questions?.length && e.questionOrder?.length
+      ? FL(e)
+      : (e?.result ?? null);
+  }
   function Sd(e) {
     let a = e.filter((c) => c.finishedAt && c.result),
       t = Object.fromEntries(el.map((c) => [c.id, { attempts: 0, aptos: 0, lastLabel: null }])),
@@ -17291,14 +17347,14 @@ EXPLICACION:
     for (let c of a) {
       l += c.elapsedSec || 0;
       let r = t[c.subjectId];
-      ((r.attempts += 1), c.result?.apto && (r.aptos += 1));
+      ((r.attempts += 1), attemptResult(c)?.apto && (r.aptos += 1));
     }
     let u = new Map();
     for (let c of a) {
       let r = u.get(c.subjectId);
       (!r || (c.finishedAt ?? 0) > (r.finishedAt ?? 0)) && u.set(c.subjectId, c);
     }
-    for (let [c, r] of u) t[c].lastLabel = r.result?.label ?? null;
+    for (let [c, r] of u) t[c].lastLabel = attemptResult(r)?.label ?? null;
     let o = Date.now() - 10080 * 60 * 1e3,
       n = a.filter((c) => (c.finishedAt ?? 0) >= o).length,
       s = new Set(a.map((c) => hd(c.finishedAt ?? c.startedAt))),
@@ -17312,7 +17368,7 @@ EXPLICACION:
         ((d += 1), f.setDate(f.getDate() - 1));
     return {
       attempts: a.length,
-      aptos: a.filter((c) => c.result?.apto).length,
+      aptos: a.filter((c) => attemptResult(c)?.apto).length,
       timeSec: l,
       week: n,
       streak: d,
@@ -17524,7 +17580,7 @@ EXPLICACION:
         ? e.markedQuestions.filter((t) => e.questions.some((l) => l.id === t))
         : e.questionOrder.filter((t) => {
             let l = e.questions.find((u) => u.id === t);
-            return l ? Vu(l, e.answersGiven[t]) !== "correct" : !1;
+            return l ? Vu(l, e.answersGiven[t], wa(l.sourceSubjectId || e.subjectId)) !== "correct" : !1;
           });
   }
   function vn(e, a) {
@@ -18256,16 +18312,16 @@ EXPLICACION:
         "After 'to' we need the infinitive verb 'identify', not a noun or adjective.",
       ),
       p = ra(
-        "Se\xF1ala las formas correctamente escritas.",
+        "Se\xF1ala las formas mal escritas.",
         ["Hubi\xE9ramos", "Hubieramos", "Examen", "Ex\xE1men"],
-        [0, 2],
-        "El pret\xE9rito pluscuamperfecto de subjuntivo lleva tilde: hubi\xE9ramos. 'Examen' es llana acabada en -n y no se acent\xFAa. 'Ex\xE1men' es incorrecta.",
+        [1, 3],
+        "Hubieramos lleva tilde: hubi\xE9ramos. Ex\xE1men no se acent\xFAa, porque es llana acabada en -n. Las otras dos est\xE1n bien, as\xED que no se marcan.",
       ),
       L = ra(
-        "Marca \xFAnicamente las graf\xEDas acentuadas de forma correcta.",
-        ["Ah\xED", "Aun as\xED", "M\xE1s dif\xEDcil", "Esta es la norma"],
-        [0, 2],
-        "'Ah\xED' lleva tilde diacr\xEDtica de lugar. 'M\xE1s' adverbio de cantidad se acent\xFAa. 'Aun' con el sentido de 'incluso' no lleva tilde. El determinante 'esta' no se acent\xFAa en la norma actual.",
+        "Se\xF1ala las opciones mal escritas.",
+        ["Ah\xED", "A\xFAn as\xED", "M\xE1s dif\xEDcil", "\xC9sta es la norma"],
+        [1, 3],
+        "Cuando significa incluso se escribe 'aun', sin tilde: aun as\xED. El determinante 'esta' ya no se acent\xFAa. 'Ah\xED' y 'm\xE1s' est\xE1n bien y no se marcan.",
       ),
       b = ra(
         "Indica las opciones que contienen un error ortogr\xE1fico.",
@@ -18335,7 +18391,7 @@ EXPLICACION:
         k({
           id: F(),
           title: "Graf\xEDas 01",
-          description: "Selecci\xF3n m\xFAltiple. Puede haber m\xE1s de una correcta.",
+          description: "Marca las opciones que están mal. Si todas están bien, no marques ninguna.",
           folderId: n,
           subjectId: "ortografia",
           questions: [p, L, b],
@@ -19368,17 +19424,18 @@ EXPLICACION:
       }
       ($({ ...S.data, attempts: S.data.attempts.map((o) => (o.id === e ? u : o)) }), await In(u));
     },
-    async commitReview(e, a) {
+    async commitReview(e, a, force) {
       let t = S.data.attempts.find((l) => l.id === e);
       if (!t || t.delivery !== "review" || t.finishedAt || !a) return;
       if ((t.revealed ?? []).includes(a)) return;
-      let l = t.answersGiven[a] ?? [];
-      if (!l.length) return;
+      let l = t.answersGiven[a] ?? [],
+        multi = wa(t.questions.find((o) => o.id === a)?.sourceSubjectId || t.subjectId);
+      if (!l.length && !(force && multi)) return;
       let u = { ...t, revealed: [...(t.revealed ?? []), a] };
       ($({ ...S.data, attempts: S.data.attempts.map((o) => (o.id === e ? u : o)) }), await In(u));
     },
     revealNow(e, a) {
-      return x.commitReview(e, a);
+      return x.commitReview(e, a, !0);
     },
     async toggleMark(e, a) {
       let t = S.data.attempts.find((o) => o.id === e);
@@ -20004,8 +20061,9 @@ EXPLICACION:
             children: [
               (0, g.jsx)("strong", { children: "Repaso" }),
               (0, g.jsx)("span", {
-                children:
-                  "Cada respuesta se corrige al elegirla. Si la dejas en blanco, pasa a la siguiente. La nota y el apto se guardan igual.",
+                children: u && wa(u.subjectId)
+                  ? "Marca las opciones que están mal y pulsa Corregir pregunta. Si crees que todas están bien, no marques ninguna."
+                  : "Cada respuesta se corrige al elegirla. Si la dejas en blanco, pasa a la siguiente. La nota y el apto se guardan igual.",
               }),
             ],
           }),
@@ -21509,7 +21567,7 @@ EXPLICACION:
                   className: "tiny faint",
                   children: zf(u.finishedAt ?? u.startedAt),
                 }),
-                (0, i.jsx)("span", { className: "tabular", children: u.result?.label }),
+                (0, i.jsx)("span", { className: "tabular", children: attemptResult(u)?.label }),
               ],
             },
             u.id,
@@ -21565,6 +21623,55 @@ EXPLICACION:
       top = Math.max(56, Math.min(window.innerHeight - 28, y - 8));
     ((e.style.left = left + "px"), (e.style.top = top + "px"));
   }
+  var dragScroll = { dir: 0, raf: 0, last: 0, speed: 130 };
+  function scrollHost() {
+    let main = document.querySelector(".main");
+    if (main && main.scrollHeight - main.clientHeight > 8) return main;
+    return document.scrollingElement || document.documentElement;
+  }
+  function nudgeScroll(px) {
+    if (!px) return;
+    let host = scrollHost(),
+      before = host.scrollTop;
+    host.scrollTop = before + px;
+    if (Math.abs(host.scrollTop - before) < 0.4) {
+      let doc = document.scrollingElement || document.documentElement;
+      if (doc !== host) doc.scrollTop += px;
+    }
+  }
+  function edgeStep(now) {
+    dragScroll.raf = 0;
+    if (!dragLive || !dragScroll.dir) {
+      dragScroll.dir = 0;
+      return;
+    }
+    let dt = Math.min(40, Math.max(0, now - dragScroll.last));
+    dragScroll.last = now;
+    nudgeScroll(dragScroll.dir * dragScroll.speed * (dt / 1000));
+    if (dragLive?.onMove) {
+      dragLive.fromScroll = !0;
+      dragLive.onMove({
+        pointerId: dragLive.pointerId,
+        clientX: dragLive.x,
+        clientY: dragLive.y,
+        preventDefault() {},
+      });
+      if (dragLive) dragLive.fromScroll = !1;
+    }
+    dragLive && dragScroll.dir && (dragScroll.raf = requestAnimationFrame(edgeStep));
+  }
+  function edgeAim(top, bottom) {
+    let dir = top <= 78 ? -1 : bottom >= window.innerHeight - 96 ? 1 : 0;
+    dragScroll.dir = dir;
+    if (dir && !dragScroll.raf) {
+      dragScroll.last = performance.now();
+      dragScroll.raf = requestAnimationFrame(edgeStep);
+    }
+  }
+  function stopEdge() {
+    ((dragScroll.dir = 0),
+      dragScroll.raf && (cancelAnimationFrame(dragScroll.raf), (dragScroll.raf = 0)));
+  }
   function Qs({ items: e, viewClass: a, kind: t, within: scope }) {
     let [l, u] = (0, Be.useState)(null),
       o = (0, Be.useRef)(null),
@@ -21610,7 +21717,9 @@ EXPLICACION:
     });
     (0, Be.useEffect)(
       () => () => {
-        dragLive || (n.current?.remove(), document.body.classList.remove("is-reordering"));
+        dragLive && dragLive.floater === n.current
+          ? (stopEdge(), dragLive.floater.remove(), (dragLive = null), document.body.classList.remove("is-reordering"))
+          : dragLive || (n.current?.remove(), document.body.classList.remove("is-reordering"));
       },
       [],
     );
@@ -21679,12 +21788,7 @@ EXPLICACION:
                     (n.offset = { dx: b - ee.left, dy: A - ee.top }),
                     (te2.style.left = ee.left + "px"),
                     (te2.style.top = ee.top + "px"),
-                    document.body.classList.add("is-reordering"),
-                    (n.lock = {
-                      y: window.scrollY,
-                      main: document.querySelector(".main"),
-                      top: document.querySelector(".main")?.scrollTop || 0,
-                    }));
+                    document.body.classList.add("is-reordering"));
                   let ne = h.indexOf(w);
                   ((m.current = ne), u({ id: w, to: ne }));
                   dragLive = {
@@ -21698,28 +21802,29 @@ EXPLICACION:
                     mergeId: null,
                     x: b,
                     y: A,
+                    pointerId: L,
+                    onMove: D,
+                    fromScroll: !1,
                   };
                   try {
                     p.setPointerCapture?.(L);
                   } catch {}
                 }, 340);
-              let holdScroll = () => {
-                  let B = n.lock;
-                  if (!B) return;
-                  window.scrollTo(0, B.y);
-                  B.main && (B.main.scrollTop = B.top);
-                },
-                D = (B) => {
+              let D = (B) => {
                 if (B.pointerId !== L) return;
                 if (!O) {
                   Math.hypot(B.clientX - b, B.clientY - A) > 28 && (window.clearTimeout(H), z());
                   return;
                 }
-                (B.preventDefault(), holdScroll());
+                B.preventDefault();
                 let ee = n.current;
                 if (ee && n.offset) {
                   ((ee.style.left = B.clientX - n.offset.dx + "px"),
                     (ee.style.top = B.clientY - n.offset.dy + "px"));
+                  if (!dragLive?.fromScroll) {
+                    let box = ee.getBoundingClientRect();
+                    edgeAim(box.top, box.bottom);
+                  }
                 }
                 let stack = document.elementsFromPoint(B.clientX, B.clientY),
                   slot = null;
@@ -21821,10 +21926,11 @@ EXPLICACION:
               },
                 onTouch = (B) => {
                   if (!O) return;
-                  (B.cancelable && B.preventDefault(), holdScroll());
+                  B.cancelable && B.preventDefault();
                 },
                 z = () => {
-                  (window.removeEventListener("pointermove", D),
+                  (stopEdge(),
+                    window.removeEventListener("pointermove", D),
                     window.removeEventListener("pointerup", q),
                     window.removeEventListener("pointercancel", q),
                     window.removeEventListener("blur", onBlur),
@@ -22349,7 +22455,7 @@ EXPLICACION:
                   className: "tiny faint",
                   children: zf(d.finishedAt ?? d.startedAt),
                 }),
-                (0, i.jsx)("span", { className: "tabular", children: d.result?.label }),
+                (0, i.jsx)("span", { className: "tabular", children: attemptResult(d)?.label }),
               ],
             },
             d.id,
@@ -22463,7 +22569,7 @@ EXPLICACION:
                 " listas \xB7 ",
                 El(Sn(Math.max(m, f))),
                 " \xB7 ",
-                d ? "de 0 a 4 a señalar · A B C D no se mezclan" : "una correcta",
+                d ? "marca las que están mal · A B C D no se mezclan" : "una correcta",
               ],
             }),
             (0, i.jsxs)("div", {
@@ -22717,12 +22823,13 @@ function Mv({ attemptId: e }) {
       c = m ? (t.answerOrder[m] ?? []) : [],
       r = m ? (t.answersGiven[m] ?? []) : [],
       C = wa(h?.sourceSubjectId || t.subjectId),
+      optTally = C && h ? Xo(h, r) : null,
       v = leftMs(t, s),
       w = !t.pauseAt && v <= 6e4,
       y = m ? t.markedQuestions.includes(m) : !1,
       k = t.delivery === "review",
       E = !!(m && (t.revealed ?? []).includes(m)),
-      live = FL(t),
+      live = FL(t, k && C),
       gradeText = live.scaleMax != null ? XC(live.score) : String(live.errors),
       answeredN = t.questionOrder.filter((p) => (t.answersGiven[p] ?? []).length > 0).length,
       spent = spentSec(t, s),
@@ -22846,12 +22953,23 @@ function Mv({ attemptId: e }) {
                       let L = h?.answers.find((A) => A.id === p);
                       if (!L) return null;
                       let b = r.includes(p),
-                        A = E && h ? (h.correctAnswerIds.includes(p) ? "ok" : b ? "bad" : void 0) : void 0;
+                        A =
+                          E && h
+                            ? C
+                              ? h.correctAnswerIds.includes(p) === b
+                                ? "ok"
+                                : "bad"
+                              : h.correctAnswerIds.includes(p)
+                                ? "ok"
+                                : b
+                                  ? "bad"
+                                  : void 0
+                            : void 0;
                       return (0, i.jsxs)(
                         "button",
                         {
                           type: "button",
-                          className: "opt" + (!k && b ? " is-picked" : "") + (t.pauseAt ? " is-blind" : ""),
+                          className: "opt" + (!E && b ? " is-picked" : "") + (t.pauseAt ? " is-blind" : ""),
                           "data-on": E ? void 0 : b,
                           "data-result": A,
                           "data-locked": E || t.pauseAt ? "true" : "false",
@@ -22865,30 +22983,6 @@ function Mv({ attemptId: e }) {
                         p,
                       );
                     }),
-                    C
-                      ? (0, i.jsxs)("button", {
-                          type: "button",
-                          className: "opt" + (!k && r.includes(ze) ? " is-picked" : "") + (t.pauseAt ? " is-blind" : ""),
-                          "data-on": E ? void 0 : r.includes(ze),
-                          "data-result": E
-                            ? h && h.correctAnswerIds.length === 0
-                              ? "ok"
-                              : r.includes(ze)
-                                ? "bad"
-                                : void 0
-                            : void 0,
-                          "data-locked": E || t.pauseAt ? "true" : "false",
-                          "aria-pressed": r.includes(ze),
-                          onClick: () => !E && !t.pauseAt && m && void x.answer(t.id, m, ze),
-                          children: [
-                            (0, i.jsx)("span", { className: "opt-letter", children: "\u2013" }),
-                            (0, i.jsx)("span", {
-                              className: "opt-text",
-                              children: t.pauseAt ? "\u00A0" : "Ninguna es correcta",
-                            }),
-                          ],
-                        })
-                      : null,
                     !k && r.length && !t.pauseAt
                       ? (0, i.jsx)("button", {
                           type: "button",
@@ -22897,12 +22991,12 @@ function Mv({ attemptId: e }) {
                           children: "Borrar respuesta",
                         })
                       : null,
-                    k && !E && C && r.length
+                    k && !E && C && !t.pauseAt
                       ? (0, i.jsx)("button", {
                           type: "button",
                           className: "btn-line",
                           onClick: () => m && x.revealNow(t.id, m),
-                          children: "Corregir",
+                          children: "Corregir pregunta",
                         })
                       : null,
                     k && E && h && !t.pauseAt
@@ -22913,13 +23007,36 @@ function Mv({ attemptId: e }) {
                               className: "small",
                               children: [
                                 (0, i.jsx)("span", { className: "faint", children: "Resultado \xB7 " }),
-                                Vu(h, r) === "correct"
-                                  ? "Correcta"
-                                  : Vu(h, r) === "incorrect"
-                                    ? "Incorrecta"
-                                    : "En blanco",
+                                C
+                                  ? optTally && optTally.misses === 0
+                                    ? "Sin fallos"
+                                    : `${optTally?.misses ?? 0} ${(optTally?.misses ?? 0) === 1 ? "fallo" : "fallos"}`
+                                  : Vu(h, r) === "correct"
+                                    ? "Correcta"
+                                    : Vu(h, r) === "incorrect"
+                                      ? "Incorrecta"
+                                      : "En blanco",
                               ],
                             }),
+                            C
+                              ? (0, i.jsxs)("p", {
+                                  className: "tiny faint",
+                                  children: [
+                                    "Marcaste ",
+                                    r.filter((p) => p !== ze).length
+                                      ? r
+                                          .filter((p) => p !== ze)
+                                          .map((p) => vn(c, p))
+                                          .join(", ")
+                                      : "ninguna",
+                                    ". Había que marcar ",
+                                    h.correctAnswerIds.length
+                                      ? h.correctAnswerIds.map((p) => vn(c, p)).join(", ")
+                                      : "ninguna",
+                                    ". Verde es acierto y rojo es fallo.",
+                                  ],
+                                })
+                              : null,
                             h.explanation
                               ? (0, i.jsx)(ExplainView, { text: h.explanation })
                               : (0, i.jsx)("p", {
@@ -22932,7 +23049,7 @@ function Mv({ attemptId: e }) {
                         ? (0, i.jsx)("p", {
                             className: "tiny faint",
                             children: C
-                              ? "Marca las opciones y pulsa Corregir. Si la dejas en blanco, pasa a la siguiente."
+                              ? "Marca las que están mal. Si crees que todas están bien, no marques ninguna y pulsa Corregir pregunta."
                               : "Al elegir una opci\xF3n se corrige al momento. Para dejarla en blanco, pasa a la siguiente.",
                           })
                         : null,
@@ -23044,17 +23161,14 @@ function Mv({ attemptId: e }) {
                     children:
                       live.scaleMax != null
                         ? `Si terminas ahora, el test sería ${live.apto ? "apto" : "no apto"} con una nota de ${gradeText}/${live.scaleMax}.`
-                        : `Si terminas ahora, el test sería ${live.apto ? "apto" : "no apto"} con ${live.errors} ${live.errors === 1 ? "error" : "errores"}.`,
+                        : `Si terminas ahora, el test sería ${live.apto ? "apto" : "no apto"} con ${live.errors} ${live.errors === 1 ? "fallo" : "fallos"} de ${live.options} opciones. Apto con ${Math.floor((live.options || 0) / 4)} o menos.`,
                   }),
                   (0, i.jsxs)("p", {
                     className: "tiny faint",
                     children: [
-                      live.correct,
-                      " correctas · ",
-                      live.incorrect,
-                      " incorrectas · ",
-                      live.blank,
-                      " en blanco. Las que aún no has contestado cuentan como blancas.",
+                      live.scaleMax != null
+                        ? `${live.correct} correctas · ${live.incorrect} incorrectas · ${live.blank} en blanco. Las que aún no has contestado cuentan como blancas.`
+                        : `${live.correct} aciertos · ${live.errors} fallos de ${live.options} opciones. Cada opción cuenta, la marques o no.`,
                     ],
                   }),
                 ],
@@ -23114,13 +23228,14 @@ function Mv({ attemptId: e }) {
         let o = (e.answersGiven[l] ?? []).length > 0,
           f = (e.revealed ?? []).includes(l),
           h = e.questions.find((p) => p.id === l),
-          c = n && f && h ? Vu(h, e.answersGiven[l]) : null,
+          multi = wa(h?.sourceSubjectId || e.subjectId),
+          c = n && f && h ? Vu(h, e.answersGiven[l], multi) : null,
           s =
             c === "correct"
               ? "ok"
               : c === "incorrect"
                 ? "bad"
-                : !n && o
+                : o
                   ? "answered"
                   : "blank";
         return (0, i.jsx)(
@@ -23144,7 +23259,8 @@ function Mv({ attemptId: e }) {
       t = a.attempts.find((o) => o.id === e);
     if (!t?.result)
       return (0, i.jsx)("p", { className: "empty", children: "Resultado no disponible." });
-    let l = t.result,
+    let l = attemptResult(t) || t.result,
+      multi = wa(t.subjectId),
       u = t.questionOrder.length;
     return (0, i.jsxs)("div", {
       className: "copy",
@@ -23164,7 +23280,7 @@ function Mv({ attemptId: e }) {
         }),
         (0, i.jsx)("p", {
           className: "muted",
-          children: l.scaleMax != null ? `/ ${l.scaleMax}` : l.errors === 1 ? "error" : "errores",
+          children: l.scaleMax != null ? `/ ${l.scaleMax}` : l.errors === 1 ? "fallo" : "fallos",
         }),
         (0, i.jsx)("p", {
           className: "verdict",
@@ -23173,20 +23289,33 @@ function Mv({ attemptId: e }) {
         }),
         (0, i.jsxs)("div", {
           className: "stat-line",
-          children: [
-            (0, i.jsxs)("span", {
-              children: [l.correct, " ", l.correct === 1 ? "correcta" : "correctas"],
-            }),
-            (0, i.jsxs)("span", {
-              children: [l.incorrect, " ", l.incorrect === 1 ? "incorrecta" : "incorrectas"],
-            }),
-            (0, i.jsxs)("span", { children: [l.blank, " ", l.blank === 1 ? "blanca" : "blancas"] }),
-            (0, i.jsxs)("span", { children: [QL(l.correct, u), "% de aciertos"] }),
-            (0, i.jsxs)("span", {
-              className: "tabular",
-              children: [El(t.elapsedSec), " / ", El(t.durationSec)],
-            }),
-          ],
+          children: multi
+            ? [
+                (0, i.jsxs)("span", { children: [l.correct, " aciertos"] }),
+                (0, i.jsxs)("span", {
+                  children: [l.incorrect, " ", l.incorrect === 1 ? "fallo" : "fallos"],
+                }),
+                (0, i.jsxs)("span", { children: [l.options, " opciones"] }),
+                (0, i.jsxs)("span", { children: [QL(l.incorrect, l.options), "% de fallos"] }),
+                (0, i.jsxs)("span", {
+                  className: "tabular",
+                  children: [El(t.elapsedSec), " / ", El(t.durationSec)],
+                }),
+              ]
+            : [
+                (0, i.jsxs)("span", {
+                  children: [l.correct, " ", l.correct === 1 ? "correcta" : "correctas"],
+                }),
+                (0, i.jsxs)("span", {
+                  children: [l.incorrect, " ", l.incorrect === 1 ? "incorrecta" : "incorrectas"],
+                }),
+                (0, i.jsxs)("span", { children: [l.blank, " ", l.blank === 1 ? "blanca" : "blancas"] }),
+                (0, i.jsxs)("span", { children: [QL(l.correct, u), "% de aciertos"] }),
+                (0, i.jsxs)("span", {
+                  className: "tabular",
+                  children: [El(t.elapsedSec), " / ", El(t.durationSec)],
+                }),
+              ],
         }),
         t.markedQuestions.length
           ? (0, i.jsxs)("p", {
@@ -23236,7 +23365,7 @@ function Mv({ attemptId: e }) {
           className: "qgrid group-gap",
           children: t.questionOrder.map((o, n) => {
             let s = t.questions.find((m) => m.id === o),
-              d = s ? Vu(s, t.answersGiven[o]) : "blank";
+              d = s ? Vu(s, t.answersGiven[o], wa(s.sourceSubjectId || t.subjectId)) : "blank";
             return (0, i.jsx)(
               "button",
               {
@@ -23265,7 +23394,9 @@ function Mv({ attemptId: e }) {
       s = o ? (t.answerOrder[o] ?? []) : [],
       d = o ? (t.answersGiven[o] ?? []) : [];
     if (!n || !o) return null;
-    let f = Vu(n, d);
+    let multi = wa(n.sourceSubjectId || t.subjectId),
+      g = multi ? Xo(n, d) : null,
+      f = multi ? (g.misses === 0 ? "correct" : "incorrect") : Vu(n, d);
     return (0, i.jsxs)("div", {
       className: "copy",
       children: [
@@ -23285,7 +23416,15 @@ function Mv({ attemptId: e }) {
               children: [
                 String(l + 1).padStart(2, "0"),
                 " ",
-                f === "correct" ? "correcta" : f === "incorrect" ? "incorrecta" : "en blanco",
+                multi
+                  ? g.misses === 0
+                    ? "sin fallos"
+                    : `${g.misses} ${g.misses === 1 ? "fallo" : "fallos"}`
+                  : f === "correct"
+                    ? "correcta"
+                    : f === "incorrect"
+                      ? "incorrecta"
+                      : "en blanco",
               ],
             }),
             (0, i.jsx)("span", {
@@ -23303,7 +23442,7 @@ function Mv({ attemptId: e }) {
           className: "qgrid group-gap",
           children: t.questionOrder.map((m, h) => {
             let c = t.questions.find((C) => C.id === m),
-              r = c ? Vu(c, t.answersGiven[m]) : "blank";
+              r = c ? Vu(c, t.answersGiven[m], wa(c.sourceSubjectId || t.subjectId)) : "blank";
             return (0, i.jsx)(
               "button",
               {
@@ -23326,7 +23465,15 @@ function Mv({ attemptId: e }) {
               let h = n.answers.find((v) => v.id === m);
               if (!h) return null;
               let c = d.includes(m),
-                C = n.correctAnswerIds.includes(m) ? "ok" : c ? "bad" : void 0;
+                C = multi
+                  ? n.correctAnswerIds.includes(m) === c
+                    ? "ok"
+                    : "bad"
+                  : n.correctAnswerIds.includes(m)
+                    ? "ok"
+                    : c
+                      ? "bad"
+                      : void 0;
               return (0, i.jsxs)(
                 "div",
                 {
@@ -23340,16 +23487,6 @@ function Mv({ attemptId: e }) {
                 m,
               );
             }),
-            n.correctAnswerIds.length === 0
-              ? (0, i.jsxs)("div", {
-                  className: "opt",
-                  "data-result": d.includes(ze) ? "ok" : void 0,
-                  children: [
-                    (0, i.jsx)("span", { className: "opt-letter", children: "\u2013" }),
-                    (0, i.jsx)("span", { children: "Ninguna es correcta" }),
-                  ],
-                })
-              : null,
           ],
         }),
         (0, i.jsxs)("div", {
@@ -23358,14 +23495,21 @@ function Mv({ attemptId: e }) {
             (0, i.jsxs)("p", {
               className: "small",
               children: [
-                (0, i.jsx)("span", { className: "faint", children: "Tu respuesta \xB7 " }),
-                KL(n, s, d),
+                (0, i.jsx)("span", { className: "faint", children: multi ? "Marcaste \xB7 " : "Tu respuesta \xB7 " }),
+                multi
+                  ? d.filter((m) => m !== ze).length
+                    ? KL(n, s, d.filter((m) => m !== ze))
+                    : "Ninguna"
+                  : KL(n, s, d),
               ],
             }),
             (0, i.jsxs)("p", {
               className: "small",
               children: [
-                (0, i.jsx)("span", { className: "faint", children: "Respuesta correcta \xB7 " }),
+                (0, i.jsx)("span", {
+                  className: "faint",
+                  children: multi ? "Hab\xEDa que marcar \xB7 " : "Respuesta correcta \xB7 ",
+                }),
                 n.correctAnswerIds.length
                   ? n.correctAnswerIds
                       .map((m) => `${vn(s, m)}. ${n.answers.find((h) => h.id === m)?.text ?? ""}`)
@@ -25927,7 +26071,6 @@ function Mv({ attemptId: e }) {
     }, 25);
   }
 })();
-
 </script>
 </body>
-</html>
+</html
